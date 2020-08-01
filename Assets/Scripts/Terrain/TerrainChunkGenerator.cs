@@ -48,6 +48,9 @@ public class TerrainChunkGenerator
     }
     static void SpawnThread()
     {
+        if(SettingsHolder.wasCreated && !SettingsHolder.Exist())
+            return;
+        
         Thread thread = new Thread(() =>
         {
             while (true)

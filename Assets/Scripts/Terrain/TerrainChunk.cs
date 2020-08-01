@@ -10,10 +10,9 @@ public class TerrainChunk
     public ChunkPos pos;
     //chunk size
     public const int chunkWidth = 16;
-    public const int chunkHeight = 64;
 
     //0 = air, 1 = land
-    public BlockType[,,] blocks = new BlockType[chunkWidth + 2, chunkHeight, chunkWidth + 2];
+    public BlockType[,,] blocks;
     List<Vector3> verts = new List<Vector3>();
     List<int> tris = new List<int>();
     List<Vector2> uvs = new List<Vector2>();
@@ -24,6 +23,9 @@ public class TerrainChunk
     public TerrainChunk(ChunkPos pos)
     {
         this.pos = pos;
+        
+        var chunkHeight = SettingsHolder.Instance.currentGenerationSettings.chunkHeight;
+        blocks = new BlockType[chunkWidth + 2, chunkHeight, chunkWidth + 2];
     }
 
     public void PopulateOffthread()
@@ -40,6 +42,7 @@ public class TerrainChunk
 
     public void RefreshBlocks()
     {
+        var chunkHeight = SettingsHolder.Instance.currentGenerationSettings.chunkHeight;
         using (new ProfilerMarker("RefreshBlocks").Auto())
         {
             for (int x = 0; x < chunkWidth + 2; x++)
@@ -71,6 +74,9 @@ public class TerrainChunk
         verts = new List<Vector3>();
         tris = new List<int>();
         uvs = new List<Vector2>();
+        
+        var chunkHeight = SettingsHolder.Instance.currentGenerationSettings.chunkHeight;
+        
         for (int x = 1; x < chunkWidth + 1; x++)
         {
             for (int z = 1; z < chunkWidth + 1; z++)
@@ -169,11 +175,13 @@ public class TerrainChunk
 
     void GenerateBlocks()
     {
+        var chunkHeight = SettingsHolder.Instance.currentGenerationSettings.chunkHeight;
+        
         for (int x = 0; x < TerrainChunk.chunkWidth + 2; x++)
         {
             for (int z = 0; z < TerrainChunk.chunkWidth + 2; z++)
             {
-                for (int y = 0; y < TerrainChunk.chunkHeight; y++)
+                for (int y = 0; y < chunkHeight; y++)
                 {
                     //if(Mathf.PerlinNoise((xPos + x-1) * .1f, (zPos + z-1) * .1f) * 10 + y < TerrainChunk.chunkHeight * .5f)
                     blocks[x, y, z] = GetBlockType(pos.x + x - 1, y, pos.z + z - 1);
@@ -194,13 +202,14 @@ public class TerrainChunk
         {
             simplex *= 2f;
             int treeCount = Mathf.FloorToInt((float)rand.NextDouble() * 5 * simplex);
+            var chunkHeight = SettingsHolder.Instance.currentGenerationSettings.chunkHeight;
 
             for (int i = 0; i < treeCount; i++)
             {
                 int xPos = (int)(rand.NextDouble() * 14) + 1;
                 int zPos = (int)(rand.NextDouble() * 14) + 1;
 
-                int y = TerrainChunk.chunkHeight - 1;
+                int y = chunkHeight - 1;
                 //find the ground
                 while (y > 0 && blocks[xPos, y, zPos] == BlockType.Air)
                 {
@@ -267,15 +276,16 @@ public class TerrainChunk
 
         float heightMap = simplex1 + simplex2;
 
+        var chunkHeight = SettingsHolder.Instance.currentGenerationSettings.chunkHeight;
         //add the 2d noise to the middle of the terrain chunk
-        float baseLandHeight = TerrainChunk.chunkHeight * .5f + heightMap;
+        float baseLandHeight = chunkHeight * .5f + heightMap;
 
         //stone layer heightmap
         float simplexStone1 = noise1.GetSimplex(x * 1f, z * 1f) * 10;
         float simplexStone2 = (noise1.GetSimplex(x * 5f, z * 5f) + .5f) * 20 * (noise1.GetSimplex(x * .3f, z * .3f) + .5f);
 
         float stoneHeightMap = simplexStone1 + simplexStone2;
-        float baseStoneHeight = TerrainChunk.chunkHeight * .25f + stoneHeightMap;
+        float baseStoneHeight = chunkHeight * .25f + stoneHeightMap;
 
         //float cliffThing = noise.GetSimplex(x * 1f, z * 1f, y) * 10;
         //float cliffThingMask = noise.GetSimplex(x * .4f, z * .4f) + .3f;
@@ -287,7 +297,7 @@ public class TerrainChunk
             blockType = BlockType.Dirt;
 
             //just on the surface, use a grass type
-            if (y > baseLandHeight - 1 && y > WaterChunk.waterHeight - 2)
+            if (y > baseLandHeight - 1 && y > SettingsHolder.Instance.currentGenerationSettings.seaLevel - 2)
                 blockType = BlockType.Grass;
 
             if (y <= baseStoneHeight)

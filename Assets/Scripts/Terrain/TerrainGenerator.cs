@@ -11,7 +11,8 @@ public class TerrainGenerator : MonoBehaviour
     public GameObject terrainChunkPrefab;
 
     private static Dictionary<ChunkPos, TerrainChunkObject> chunks = new Dictionary<ChunkPos, TerrainChunkObject>();
-
+    
+    
     // Start is called before the first frame update
     void Start()
     {
@@ -32,7 +33,7 @@ public class TerrainGenerator : MonoBehaviour
         {
             return chunks[cp];
         }
-
+        
         TerrainChunk chunk = TerrainChunkGenerator.request(cp, instant);
         if (chunk == null)
         {
@@ -48,7 +49,7 @@ public class TerrainGenerator : MonoBehaviour
 
         chunkObject.BuildMesh(chunk);
 
-        WaterChunk wat = chunkObject.transform.GetComponentInChildren<WaterChunk>();
+        WaterChunk wat = chunkObject.GetComponentInChildren<WaterChunk>();
         wat.SetLocs(chunk.blocks, chunkObject.Chunk);
         
         wat.BuildMesh();
@@ -207,6 +208,7 @@ public class TerrainGenerator : MonoBehaviour
         {
             {
                 chunks[cp].gameObject.SetActive(false);
+                
                 Destroy(chunks[cp].gameObject);
                 chunks.Remove(cp);
             }

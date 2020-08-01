@@ -1,3 +1,16 @@
+[01.08.2020]==================================================
+
+[New] Generation settings. Right now there is only chunks height and current sea level.
+[New] FollowTransform now supports rotation.
+
+[Fix] Chunks didn't clean their own meshes which led to a very large expansion of the used RAM.
+[Fix] CurrentlyInBlock check now takes into account the vertical limit.
+[Fix] No SpawnThread() at quiting game.
+
+[Other] Updated from Unity beta "2020.1.0b16" to Unity stable "2020.1.0f1".
+[Other] Pickaxe model and some textures & materials for slime.
+[Other] Disabled shadow cascade at graphics settings and increased near clipping plane at main camera to make shadows much more stable at 1000+ distance in exchange for overall shadows quality.
+
 [24.07.2020]==================================================
 
 [New] Settings system that use ini files. Currently provide options to enable\disable postprocessing, underwater effects and to select antialiasing. (Used cemdervis/SharpConfig from it's githhub repo for ini functionality.)
@@ -47,6 +60,7 @@ Most of the changes are aimed at the visual component of the game.
 [Change] Some texture tweaks - remade stone texture, new sand and core textures; Less bluish grass and slightly richer tree textures.
 [Change] Added more post-processing effects. Need for settings menu.
 [Change] Character control and jumps are now a little more responsive.
+[Change] Trees set grass under them to dirt.
 [Change] Water is now considered as block type and fills it's reservoir to the bottom.
 [Change] Left click to break blocks and right to place instead of left for placing and right for breaking.
 [Change] "PP" layer renamed to "PostProcessing".

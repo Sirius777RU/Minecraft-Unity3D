@@ -1,10 +1,12 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using System;
 using UnityEngine;
 
+//Useful utility in case when you want one object follow another selectively on axis or rotation.
 public class FollowTransform : MonoBehaviour
 {
-    public AxisMode axisMode = AxisMode.Full;
+    public PositionAxisMode positionAxisMode = PositionAxisMode.Full;
+    public RotationAxisMode rotationAxisMode = RotationAxisMode.None;
+    [Space(10)]
     public Transform target;
     private Transform tf;
     
@@ -13,26 +15,41 @@ public class FollowTransform : MonoBehaviour
         tf = GetComponent<Transform>();
     }
 
-    private void Update()
+    private void LateUpdate()
     {
-        if (axisMode == AxisMode.Full)
+        if (positionAxisMode == PositionAxisMode.Full)
         {
             tf.position = target.position;
         }
-        else if (axisMode == AxisMode.XZ)
+        else if (positionAxisMode == PositionAxisMode.XZ)
         {
             var temp = target.position;
             temp.y = tf.position.y;
             
             tf.position = temp;
         }
-        
+
+        if (rotationAxisMode == RotationAxisMode.Full)
+        {
+            tf.rotation = target.rotation;
+        }
+    }
+
+    private void Update()
+    {
         
     }
     
-    public enum AxisMode
+    public enum PositionAxisMode
     {
+        None,
         Full,
         XZ
+    }
+    
+    public enum RotationAxisMode
+    {
+        None,
+        Full
     }
 }

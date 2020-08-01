@@ -27,6 +27,9 @@ public class CurrentlyInBlock : MonoBehaviour
                 int bix = Mathf.FloorToInt(position.x + offset.x) - chunkPosX;
                 int biy = Mathf.FloorToInt(position.y + offset.y);
                 int biz = Mathf.FloorToInt(position.z + offset.z) - chunkPosZ;
+                
+                if(biy >= SettingsHolder.Instance.currentGenerationSettings.chunkHeight || biy < 0)
+                        return;
 
                 inBlock = TerrainGenerator.getBlock(cp, bix, biy, biz);
 

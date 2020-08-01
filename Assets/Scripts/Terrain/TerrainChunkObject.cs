@@ -5,21 +5,24 @@ using UnityEngine;
 
 class TerrainChunkObject : MonoBehaviour {
     private TerrainChunk chunk = null;
-
+    
+    public Mesh mesh;
+    
     public TerrainChunk Chunk { get => chunk; set => chunk = value; }
 
-    public Mesh BuildMesh(TerrainChunk chunk) {
+    public void BuildMesh(TerrainChunk chunk)
+    {
+        mesh = new Mesh();
+        var meshFilter = GetComponent<MeshFilter>();
+        meshFilter.mesh = mesh;
         this.chunk = chunk;
-        Mesh mesh = new Mesh();
 
-        mesh.vertices = chunk.getVerts().ToArray();
-        mesh.triangles = chunk.getTris().ToArray();
-        mesh.uv = chunk.getUVs().ToArray();
+        meshFilter.mesh.vertices = chunk.getVerts().ToArray();
+        meshFilter.mesh.triangles = chunk.getTris().ToArray();
+        meshFilter.mesh.uv = chunk.getUVs().ToArray();
 
-        mesh.RecalculateNormals();
-        GetComponent<MeshFilter>().mesh = mesh;
-        GetComponent<MeshCollider>().sharedMesh = mesh;
-        return mesh;
+        meshFilter.mesh.RecalculateNormals();
+        GetComponent<MeshCollider>().sharedMesh = meshFilter.mesh;
     }
 
     public void UpdateChunk() {
@@ -27,5 +30,10 @@ class TerrainChunkObject : MonoBehaviour {
         chunk.UpdateTrig();
         BuildMesh(chunk);
         this.name = this.name + " (u)";
+    }
+
+    private void OnDestroy()
+    {
+        Destroy(mesh);
     }
 }
