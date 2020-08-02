@@ -1,10 +1,10 @@
 [02.08.2020]==================================================
 
-[New] The game now treats space differently by resetting player position and moving the world around every 128 blocks allowing you to freely travel far and interact with the environment without actually moving far from the zero coordinate solving problems with floating point accuracy at 1000+ distance.
-[New] Tool now follows certain point at screen, this allows you to position it relative to the interface.
+[New] Game now treats space differently by resetting player position and moving the world around every 128 blocks allowing you to freely travel far and interact with the environment - without actually moving far from the zero coordinate, which solves problem with floating point accuracy at 1000+ distance.
+[New] Current tool now follows certain point at screen, this allows to position it relatively to the interface.
 
-[Change] Enabled cascade shadows again, because the shadows behave stably again at a distance.
-[Change] Water now is displayed slightly below the full block at same height.
+[Change] Enabled cascade shadows again since shadows are stable now.
+[Change] Water geometry will be created slightly below full block at same height.
 
 [Fix] Some water shader related issues in build.
 

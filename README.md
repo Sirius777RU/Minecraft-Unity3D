@@ -1,6 +1,6 @@
 # Unity Voxel Community Project
 
-![Screenshot](./Assets/screenshot.png?raw=true)
+![Screenshot](./Assets/screenshot2.png?raw=true)
 
 This project is a fork from [Sam Hogan's Minecraft in 24 hours](https://youtu.be/Nj8gt_92c-M).
 
@@ -26,7 +26,8 @@ Join Discord: https://discord.gg/sdmHAP4
 
 # Credits
 
-Sam Hogan - Original Author
-Benoit Girard - Voxel Project Starter
-Howard Campbell - Voxel models and more
-K.jpg - Terrain Generation Contributor
+- Sam Hogan - Original Author.
+- Benoit Girard - Voxel Project Starter.
+- Howard Campbell - Voxel models and more.
+- K.jpg - Terrain Generation Contributor.
+- Sirius777RU - Programming and Visuals.
