@@ -68,15 +68,15 @@ public class WaterChunk : MonoBehaviour
         { 
             if(locs[x,z]==1)
             {
-                verts.Add(new Vector3(x, 0, z));
-                verts.Add(new Vector3(x, 0, z+1));
-                verts.Add(new Vector3(x+1, 0, z+1));
-                verts.Add(new Vector3(x+1, 0, z));
+                verts.Add(new Vector3(x, -0.1f, z));
+                verts.Add(new Vector3(x, -0.1f, z+1));
+                verts.Add(new Vector3(x+1, -0.1f, z+1));
+                verts.Add(new Vector3(x+1, -0.1f, z));
 
-                verts.Add(new Vector3(x, 0, z));
-                verts.Add(new Vector3(x, 0, z + 1));
-                verts.Add(new Vector3(x + 1, 0, z + 1));
-                verts.Add(new Vector3(x + 1, 0, z));
+                verts.Add(new Vector3(x, -0.1f, z));
+                verts.Add(new Vector3(x, -0.1f, z + 1));
+                verts.Add(new Vector3(x + 1, -0.1f, z + 1));
+                verts.Add(new Vector3(x + 1, -0.1f, z));
 
 
                 uvs.AddRange(uvpat);

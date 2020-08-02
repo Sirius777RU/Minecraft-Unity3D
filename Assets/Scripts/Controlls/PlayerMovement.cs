@@ -76,7 +76,7 @@ public class PlayerMovement : MonoBehaviour
             horizontal = Input.GetAxisRaw("Horizontal");
             vertical = Input.GetAxisRaw("Vertical");
 
-            var underwater = bodyInBlock.inBlock == BlockType.Water;
+            bool underwater = bodyInBlock?.inBlock == BlockType.Water;
             float currentSpeed = 0;
             float currentJumpHeight = underwater ? jumpHeightUnderwater : jumpHeight;
             currentGravity = underwater ? gravityUnderwater : gravity;

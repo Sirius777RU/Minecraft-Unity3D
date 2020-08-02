@@ -14,14 +14,22 @@ public class TerrainGenerator : MonoBehaviour
     
     
     // Start is called before the first frame update
-    void Start()
+    private void OnEnable()
     {
         TerrainChunkGenerator.Start();
         LoadChunks(1, true);
     }
 
+    private void OnDisable()
+    {
+        
+    }
+
     private void Update()
     {
+        if(SettingsHolder.wasCreated && !SettingsHolder.Exist())
+            return;
+        
         LoadChunks(1, true);
         LoadChunks(8);
         UnloadChunk(8);
@@ -133,9 +141,10 @@ public class TerrainGenerator : MonoBehaviour
 
     void LoadChunks(int chunkDist, bool instant = false)
     {
+        Vector3 offset = AntiFloatPointOrigin.Instance.offset;
         //the current chunk the player is in
-        int curChunkPosX = Mathf.FloorToInt(player.position.x / 16) * 16;
-        int curChunkPosZ = Mathf.FloorToInt(player.position.z / 16) * 16;
+        int curChunkPosX = Mathf.FloorToInt((player.position.x + offset.x) / 16) * 16;
+        int curChunkPosZ = Mathf.FloorToInt((player.position.z + offset.z) / 16) * 16;
 
         Camera camera = player.GetComponentInChildren<Camera>();
 
@@ -153,7 +162,7 @@ public class TerrainGenerator : MonoBehaviour
 
                 if (camera != null)
                 {
-                    var point = camera.WorldToViewportPoint(new Vector3(cp.x, 32, cp.z));
+                    var point = camera.WorldToViewportPoint(new Vector3(cp.x, 32, cp.z)) + offset;
                     if (point.z > 0 && point.x >= 0 && point.x <= 1 && point.y >= 0 && point.y <= 1)
                     {
                         highPri.Add(cp);
@@ -188,8 +197,9 @@ public class TerrainGenerator : MonoBehaviour
 
     void UnloadChunk(int chunkDist)
     {
-        int curChunkPosX = Mathf.FloorToInt(player.position.x / 16) * 16;
-        int curChunkPosZ = Mathf.FloorToInt(player.position.z / 16) * 16;
+        Vector3 offset = AntiFloatPointOrigin.Instance.offset;
+        int curChunkPosX = Mathf.FloorToInt((player.position.x + offset.x) / 16) * 16;
+        int curChunkPosZ = Mathf.FloorToInt((player.position.z + offset.z) / 16) * 16;
 
         List<ChunkPos> toDestroy = new List<ChunkPos>();
         foreach (KeyValuePair<ChunkPos, TerrainChunkObject> c in chunks)

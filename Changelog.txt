@@ -1,15 +1,25 @@
+[02.08.2020]==================================================
+
+[New] The game now treats space differently by resetting player position and moving the world around every 128 blocks allowing you to freely travel far and interact with the environment without actually moving far from the zero coordinate solving problems with floating point accuracy at 1000+ distance.
+[New] Tool now follows certain point at screen, this allows you to position it relative to the interface.
+
+[Change] Enabled cascade shadows again, because the shadows behave stably again at a distance.
+[Change] Water now is displayed slightly below the full block at same height.
+
+[Fix] Some water shader related issues in build.
+
 [01.08.2020]==================================================
 
 [New] Generation settings. Right now there is only chunks height and current sea level.
 [New] FollowTransform now supports rotation.
 
+[Change] Disabled shadow cascade at graphics settings and increased near clipping plane at main camera to make shadows much more stable at 1000+ distance in exchange for overall shadows quality.
+
 [Fix] Chunks didn't clean their own meshes which led to a very large expansion of the used RAM.
 [Fix] CurrentlyInBlock check now takes into account the vertical limit.
-[Fix] No SpawnThread() at quiting game.
 
 [Other] Updated from Unity beta "2020.1.0b16" to Unity stable "2020.1.0f1".
 [Other] Pickaxe model and some textures & materials for slime.
-[Other] Disabled shadow cascade at graphics settings and increased near clipping plane at main camera to make shadows much more stable at 1000+ distance in exchange for overall shadows quality.
 
 [24.07.2020]==================================================
 

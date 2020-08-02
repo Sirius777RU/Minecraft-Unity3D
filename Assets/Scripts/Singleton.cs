@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
 
 public abstract class Singleton<T> : MonoBehaviour where T : Component
 {
@@ -27,19 +28,21 @@ public abstract class Singleton<T> : MonoBehaviour where T : Component
     
     public static bool Exist()
     {
-        return instance == null;
+        return instance;
     }
-    
+
+    private void OnDestroy()
+    {
+        instance = null;
+    }
+
     protected virtual void Awake ()
     {
         if ( instance == null )
         {
             instance = this as T;
+            wasCreated = true;
             //DontDestroyOnLoad ( gameObject );
-        }
-        else
-        {
-            Destroy ( gameObject );
         }
     }
 }

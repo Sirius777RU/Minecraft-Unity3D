@@ -46,6 +46,9 @@ public class TerrainModifier : MonoBehaviour
                     pointInTargetBlock = hitInfo.point - transform.forward * .01f;
                 }
                 
+                Vector3 offset = AntiFloatPointOrigin.Instance.offset;
+                pointInTargetBlock += offset;
+
                 //Get the terrain chunk (can't just use collider)
                 int chunkPosX = Mathf.FloorToInt(pointInTargetBlock.x / 16f) * 16;
                 int chunkPosZ = Mathf.FloorToInt(pointInTargetBlock.z / 16f) * 16;
@@ -56,7 +59,7 @@ public class TerrainModifier : MonoBehaviour
                 int bix = Mathf.FloorToInt(pointInTargetBlock.x) - chunkPosX + 1;
                 int biy = Mathf.FloorToInt(pointInTargetBlock.y);
                 int biz = Mathf.FloorToInt(pointInTargetBlock.z) - chunkPosZ + 1;
-
+                
                 //Ensure that block could be destroyed.
                 var currentBlock = TerrainGenerator.getBlock(cp, bix-1, biy, biz-1);
 

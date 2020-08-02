@@ -29,7 +29,6 @@ public class SkySphere : MonoBehaviour
     public Gradient horizonColor = new Gradient();
     public Gradient waterColor = new Gradient();
     public Gradient environmentColor = new Gradient();
-    public Gradient sparklesColor = new Gradient();
     public Gradient edgeFoamColor = new Gradient();
     
     public float underwaterFogDistance = 0.05f;
@@ -64,7 +63,6 @@ public class SkySphere : MonoBehaviour
         Shader.SetGlobalColor("CloudColor", cloudColor.Evaluate(currentTime));
         Shader.SetGlobalColor("_HorizonColor", horizonColor  .Evaluate(currentTime));
         water.SetColor("_FarColor", waterColor.Evaluate(currentTime));
-        water.SetColor("_SparkleColor", sparklesColor.Evaluate(currentTime));
         water.SetColor("_EdgeFoamColor", edgeFoamColor.Evaluate(currentTime));
         water.SetFloat("_FoamContribution", foamContribution.Evaluate(currentTime));
 

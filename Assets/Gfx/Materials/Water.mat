@@ -60,7 +60,7 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _SparklesNormalMap:
-        m_Texture: {fileID: 2800000, guid: 7c34edbeda9986942b79a73f6fea0ebb, type: 3}
+        m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _WaveNormalMap:
@@ -76,47 +76,47 @@ Material:
     - _DstBlend: 10
     - _EdgeFoamDepth: 0.2
     - _FancyShadows: 0
-    - _FoamContribution: 0.29903275
-    - _FoamNoiseScale: 0.32
-    - _FoamScale: 10
+    - _FoamContribution: 0.19903272
+    - _FoamNoiseScale: 0
+    - _FoamScale: 8
     - _FoamSpeed: 0.1
     - _GlossMapScale: 1
     - _Glossiness: 0.5
     - _GlossyReflections: 1
-    - _MaxShadowDistance: 50
+    - _MaxShadowDistance: 0
     - _Metallic: 0
     - _Mode: 3
     - _OcclusionStrength: 1
     - _Parallax: 0.02
     - _ReflectionContribution: 0
     - _SmoothnessTextureChannel: 0
-    - _SparkleExponent: 40000
-    - _SparkleScale: 40
+    - _SparkleExponent: 0
+    - _SparkleScale: 1
     - _SparkleSpeed: 0.025
     - _SpecularHighlights: 1
     - _SrcBlend: 1
-    - _SunSpecularExponent: 4000
+    - _SunSpecularExponent: 500
     - _UVSec: 0
-    - _Wave1Amplitude: 0.02
+    - _Wave1Amplitude: 0.03
     - _Wave1Direction: 0.561
     - _Wave1Speed: 1
-    - _Wave1Wavelength: 0.1
-    - _Wave2Amplitude: 0.02
+    - _Wave1Wavelength: 2
+    - _Wave2Amplitude: 0.03
     - _Wave2Direction: 0.25
-    - _Wave2Speed: 4
-    - _Wave2Wavelength: 0.1
+    - _Wave2Speed: 3
+    - _Wave2Wavelength: 2
     - _WaveNormalScale: 20
     - _WaveNormalSpeed: 0.05
     - _ZWrite: 0
     m_Colors:
     - _Color: {r: 1, g: 1, b: 1, a: 0.7019608}
-    - _DeepColor: {r: 0, g: 0.031137936, b: 0.043, a: 1}
+    - _DeepColor: {r: 0.0075199995, g: 0.0075199995, b: 0.02, a: 1}
     - _EdgeFoamColor: {r: 0.23529412, g: 0.23529412, b: 0.23529412, a: 1}
     - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
     - _FarColor: {r: 0, g: 0.14809471, b: 0.28268594, a: 1}
     - _SSSColor: {r: 0.15222874, g: 0.2735849, b: 0.06323425, a: 1}
     - _ShadowColor: {r: 0.16220179, g: 0.21706232, b: 0.25471693, a: 1}
     - _ShallowColor: {r: 0.44313726, g: 0.9137255, b: 0.6627451, a: 1}
-    - _SparkleColor: {r: 0.14117648, g: 0.14117648, b: 0.14117648, a: 1}
+    - _SparkleColor: {r: 0, g: 0, b: 0, a: 1}
     - _SunSpecularColor: {r: 0, g: 0, b: 0, a: 1}
   m_BuildTextureStacks: []

@@ -322,7 +322,11 @@
                 // ---------- //
 
                 // Distort the world space uv coordinates by the normal map.
-                float2 foamUV = (i.worldPosition.xz / _FoamScale) + (_FoamNoiseScale * normalTS.xz);
+                 
+                float2 foamUV;
+                float2 noise = (_FoamNoiseScale * normalTS.xz);
+                foamUV.x = lerp(0, 1, i.worldPosition.x / _FoamScale) + noise.x;
+                foamUV.y = lerp(0, 1, i.worldPosition.z / _FoamScale) + noise.y;
 
                 // Sample the foam texture and modulate the result by the distance mask and shadow mask.
                 float3 foamColor = MotionFourWayChaos(_FoamTexture, foamUV, _FoamSpeed, false);

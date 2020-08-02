@@ -43,6 +43,7 @@ public class TerrainChunk
     public void RefreshBlocks()
     {
         var chunkHeight = SettingsHolder.Instance.currentGenerationSettings.chunkHeight;
+        
         using (new ProfilerMarker("RefreshBlocks").Auto())
         {
             for (int x = 0; x < chunkWidth + 2; x++)

@@ -46,10 +46,9 @@ public class TerrainChunkGenerator
         SpawnThread();
         SpawnThread();
     }
+    
     static void SpawnThread()
     {
-        if(SettingsHolder.wasCreated && !SettingsHolder.Exist())
-            return;
         
         Thread thread = new Thread(() =>
         {
@@ -77,6 +76,7 @@ public class TerrainChunkGenerator
                     }
                 }
                 TerrainChunk chunk = new TerrainChunk(toCompute.Value);
+                
                 chunk.PopulateOffthread();
                 lock (chunkBlocks)
                 {

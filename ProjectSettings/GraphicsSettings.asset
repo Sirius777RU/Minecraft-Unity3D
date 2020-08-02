@@ -39,6 +39,13 @@ GraphicsSettings:
   - {fileID: 16000, guid: 0000000000000000f000000000000000, type: 0}
   - {fileID: 16001, guid: 0000000000000000f000000000000000, type: 0}
   - {fileID: 17000, guid: 0000000000000000f000000000000000, type: 0}
+  - {fileID: 4800000, guid: 8c9de1eaa9c36184584f927716ced656, type: 3}
+  - {fileID: 4800000, guid: 6e7cc32f3fcad5a40b840128fd4f03fc, type: 3}
+  - {fileID: 4800000, guid: d6990dab986aea047b772ce7699d500e, type: 3}
+  - {fileID: 4800000, guid: 1d5873a41d6719c47920656c25fb4f7b, type: 3}
+  - {fileID: 4800000, guid: 51d6ff454b84c58489d11b8f13610e2b, type: 3}
+  - {fileID: 4800000, guid: 14a95e3eec3de6447a15be543d36c1df, type: 3}
+  - {fileID: 4800000, guid: e5e3909efe782484ead4650706063c1b, type: 3}
   m_PreloadedShaders: []
   m_SpritesDefaultMaterial: {fileID: 10754, guid: 0000000000000000f000000000000000,
     type: 0}
@@ -60,7 +67,7 @@ GraphicsSettings:
       useReflectionProbeBlending: 1
       useHDR: 1
       useDetailNormalMap: 1
-      useCascadedShadowMaps: 0
+      useCascadedShadowMaps: 1
       prefer32BitShadowMaps: 0
       enableLPPV: 1
       useDitherMaskForAlphaBlendedShadows: 1
@@ -77,7 +84,7 @@ GraphicsSettings:
       useReflectionProbeBlending: 1
       useHDR: 1
       useDetailNormalMap: 1
-      useCascadedShadowMaps: 0
+      useCascadedShadowMaps: 1
       prefer32BitShadowMaps: 0
       enableLPPV: 1
       useDitherMaskForAlphaBlendedShadows: 1
@@ -94,7 +101,7 @@ GraphicsSettings:
       useReflectionProbeBlending: 1
       useHDR: 1
       useDetailNormalMap: 1
-      useCascadedShadowMaps: 0
+      useCascadedShadowMaps: 1
       prefer32BitShadowMaps: 0
       enableLPPV: 1
       useDitherMaskForAlphaBlendedShadows: 1

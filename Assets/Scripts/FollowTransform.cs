@@ -2,6 +2,7 @@
 using UnityEngine;
 
 //Useful utility in case when you want one object follow another selectively on axis or rotation.
+[ExecuteInEditMode]
 public class FollowTransform : MonoBehaviour
 {
     public PositionAxisMode positionAxisMode = PositionAxisMode.Full;

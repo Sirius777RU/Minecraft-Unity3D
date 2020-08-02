@@ -5,8 +5,9 @@ using UnityEngine;
 
 class TerrainChunkObject : MonoBehaviour {
     private TerrainChunk chunk = null;
+    private bool initialized = false;
     
-    public Mesh mesh;
+    [HideInInspector] public Mesh mesh;
     
     public TerrainChunk Chunk { get => chunk; set => chunk = value; }
 
@@ -23,6 +24,16 @@ class TerrainChunkObject : MonoBehaviour {
 
         meshFilter.mesh.RecalculateNormals();
         GetComponent<MeshCollider>().sharedMesh = meshFilter.mesh;
+
+        if (!initialized)
+        {
+            initialized = true;
+            
+            var tf = transform;
+            var temp = tf.position;
+            temp -= AntiFloatPointOrigin.Instance.offset;
+            tf.position = temp;
+        }
     }
 
     public void UpdateChunk() {
