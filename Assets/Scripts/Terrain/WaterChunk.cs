@@ -3,100 +3,103 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class WaterChunk : MonoBehaviour
+namespace UnityCommunityVoxelProject.Legacy
 {
-    //0 = air, 1 = land
-    public int[,] locs = new int[16,16];
-    private Mesh mesh;
-    
-    private void Start()
+    public class WaterChunk : MonoBehaviour
     {
-        transform.localPosition = 
-            new Vector3(0, SettingsHolder.Instance.currentGenerationSettings.seaLevel, 0);
-    }
-
-
-
-    public void SetLocs(BlockType[,,] blocks, TerrainChunk terrainChunk)
-    {
-        int y;
-        var chunkHeight = SettingsHolder.Instance.currentGenerationSettings.chunkHeight;
-        var seaLevel = SettingsHolder.Instance.currentGenerationSettings.seaLevel;
+        //0 = air, 1 = land
+        public int[,] locs = new int[16,16];
+        private Mesh mesh;
         
-        for(int x = 0; x < 16; x++)
+        private void Start()
         {
-            for(int z = 0; z < 16; z++)
+            transform.localPosition = 
+                new Vector3(0, SettingsHolder.Instance.currentGenerationSettings.seaLevel, 0);
+        }
+
+
+
+        public void SetLocs(BlockType[,,] blocks, TerrainChunk terrainChunk)
+        {
+            int y;
+            var chunkHeight = SettingsHolder.Instance.currentGenerationSettings.chunkHeight;
+            var seaLevel = SettingsHolder.Instance.currentGenerationSettings.seaLevel;
+            
+            for(int x = 0; x < 16; x++)
             {
-                locs[x, z] = 0;
-
-                y = chunkHeight - 1;
-
-                //find the ground
-                while(y > 0 && blocks[x+1, y, z+1] == BlockType.Air)
+                for(int z = 0; z < 16; z++)
                 {
-                    y--;
-                }
+                    locs[x, z] = 0;
 
-                if (y + 1 < seaLevel)
-                {
-                    locs[x, z] = 1;
-                    //blocks[x+1, y+1, z+1] = BlockType.Water;
+                    y = chunkHeight - 1;
 
-                    while (y+1 < seaLevel)
+                    //find the ground
+                    while(y > 0 && blocks[x+1, y, z+1] == BlockType.Air)
                     {
-                        blocks[x+1, y+1, z+1] = BlockType.Water;
-                        y++;
+                        y--;
+                    }
+
+                    if (y + 1 < seaLevel)
+                    {
+                        locs[x, z] = 1;
+                        //blocks[x+1, y+1, z+1] = BlockType.Water;
+
+                        while (y+1 < seaLevel)
+                        {
+                            blocks[x+1, y+1, z+1] = BlockType.Water;
+                            y++;
+                        }
                     }
                 }
             }
+            
         }
-        
-    }
 
-    Vector2[] uvpat = new Vector2[] { new Vector2(0, 0), new Vector2(0, 1), new Vector2(1, 1), new Vector2(1, 0) };
+        Vector2[] uvpat = new Vector2[] { new Vector2(0, 0), new Vector2(0, 1), new Vector2(1, 1), new Vector2(1, 0) };
 
-    public void BuildMesh()
-    {
-        mesh = new Mesh();
-        
-        List<Vector3> verts = new List<Vector3>();
-        List<int> tris = new List<int>();
-        List<Vector2> uvs = new List<Vector2>();
+        public void BuildMesh()
+        {
+            mesh = new Mesh();
+            
+            List<Vector3> verts = new List<Vector3>();
+            List<int> tris = new List<int>();
+            List<Vector2> uvs = new List<Vector2>();
 
-        for(int x = 0; x < 16; x++)
-        for(int z = 0; z < 16; z++)
-        { 
-            if(locs[x,z]==1)
-            {
-                verts.Add(new Vector3(x, -0.1f, z));
-                verts.Add(new Vector3(x, -0.1f, z+1));
-                verts.Add(new Vector3(x+1, -0.1f, z+1));
-                verts.Add(new Vector3(x+1, -0.1f, z));
+            for(int x = 0; x < 16; x++)
+            for(int z = 0; z < 16; z++)
+            { 
+                if(locs[x,z]==1)
+                {
+                    verts.Add(new Vector3(x, -0.1f, z));
+                    verts.Add(new Vector3(x, -0.1f, z+1));
+                    verts.Add(new Vector3(x+1, -0.1f, z+1));
+                    verts.Add(new Vector3(x+1, -0.1f, z));
 
-                verts.Add(new Vector3(x, -0.1f, z));
-                verts.Add(new Vector3(x, -0.1f, z + 1));
-                verts.Add(new Vector3(x + 1, -0.1f, z + 1));
-                verts.Add(new Vector3(x + 1, -0.1f, z));
+                    verts.Add(new Vector3(x, -0.1f, z));
+                    verts.Add(new Vector3(x, -0.1f, z + 1));
+                    verts.Add(new Vector3(x + 1, -0.1f, z + 1));
+                    verts.Add(new Vector3(x + 1, -0.1f, z));
 
 
-                uvs.AddRange(uvpat);
-                uvs.AddRange(uvpat);
-                int tl = verts.Count-8;
-                tris.AddRange(new int[] { tl, tl + 1, tl + 2, tl, tl + 2, tl + 3,
-                    tl+3+4,tl+2+4,tl+4,tl+2+4,tl+1+4,tl+4});
+                    uvs.AddRange(uvpat);
+                    uvs.AddRange(uvpat);
+                    int tl = verts.Count-8;
+                    tris.AddRange(new int[] { tl, tl + 1, tl + 2, tl, tl + 2, tl + 3,
+                        tl+3+4,tl+2+4,tl+4,tl+2+4,tl+1+4,tl+4});
+                }
             }
+
+            mesh.vertices = verts.ToArray();
+            mesh.triangles = tris.ToArray();
+            mesh.uv = uvs.ToArray();
+
+            mesh.RecalculateNormals();
+            GetComponent<MeshFilter>().mesh = mesh;
         }
 
-        mesh.vertices = verts.ToArray();
-        mesh.triangles = tris.ToArray();
-        mesh.uv = uvs.ToArray();
-
-        mesh.RecalculateNormals();
-        GetComponent<MeshFilter>().mesh = mesh;
-    }
-
-    private void OnDestroy()
-    {
-        Destroy(mesh);
+        private void OnDestroy()
+        {
+            Destroy(mesh);
+        }
     }
 }

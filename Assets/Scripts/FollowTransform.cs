@@ -16,7 +16,7 @@ public class FollowTransform : MonoBehaviour
         tf = GetComponent<Transform>();
     }
 
-    private void LateUpdate()
+    private void FixedUpdate()
     {
         if (positionAxisMode == PositionAxisMode.Full)
         {
@@ -34,11 +34,6 @@ public class FollowTransform : MonoBehaviour
         {
             tf.rotation = target.rotation;
         }
-    }
-
-    private void Update()
-    {
-        
     }
     
     public enum PositionAxisMode

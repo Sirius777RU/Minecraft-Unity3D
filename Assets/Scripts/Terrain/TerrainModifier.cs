@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using UnityEngine.UI;
+using UnityCommunityVoxelProject.Legacy;
 
 public class TerrainModifier : MonoBehaviour
 {

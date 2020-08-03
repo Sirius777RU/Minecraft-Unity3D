@@ -8,7 +8,8 @@ public class AntiFloatPointOrigin : Singleton<AntiFloatPointOrigin>
     public Vector3 offset = Vector3.zero; 
     
     private Transform tf;
-
+    private PlayerMovement playerMovement;
+    
     private AntiFloatPointObject[] antiFloatObjects;
     private Transform[] antiFloatTransforms;
     
@@ -17,10 +18,11 @@ public class AntiFloatPointOrigin : Singleton<AntiFloatPointOrigin>
     private void Start()
     {
         tf = GetComponent<Transform>();
+        playerMovement = SettingsHolder.Instance.player.GetComponent<PlayerMovement>();
         antiFloatObjects = FindObjectsOfType<AntiFloatPointObject>();
 
-        offset.x = Mathf.Round(tf.position.x/limit)*limit;
-        offset.z = Mathf.Round(tf.position.z/limit)*limit;
+        offset.x = Mathf.Floor(tf.position.x/limit)*limit;
+        offset.z = Mathf.Floor(tf.position.z/limit)*limit;
 
         var temp = tf.position - offset;
         temp.y = tf.position.y;
@@ -67,8 +69,10 @@ public class AntiFloatPointOrigin : Singleton<AntiFloatPointOrigin>
             compensation.z += limit*2;
         }
 
-        tf.position = temp + compensation;
+        
+        tf.position = temp + (compensation);
         offset += (-compensation);
+        playerMovement.AddEffect(PlayerMovement.MovementEffectType.stopGravity, 0.25f);
         
         int length = antiFloatObjects.Length;
         for (int i = 0; i < length; i++)
