@@ -30,10 +30,10 @@ namespace UnityCommunityVoxelProject.Terrain
         {
             blocks    = new NativeArray<Block>(blocksCount, Allocator.Persistent);
             
-            vertices  = new NativeList<float3>(393300, Allocator.Persistent);
-            normals   = new NativeList<float3>(393300, Allocator.Persistent);
-            triangles = new NativeList<int>(590004, Allocator.Persistent); 
-            uv        = new NativeList<float2>(393300, Allocator.Persistent);
+            vertices  = new NativeList<float3>(15000, Allocator.Persistent);
+            normals   = new NativeList<float3>(15000, Allocator.Persistent);
+            triangles = new NativeList<int>(25000, Allocator.Persistent); 
+            uv        = new NativeList<float2>(15000, Allocator.Persistent);
 
             tf = GetComponent<Transform>();
             meshFilter = GetComponent<MeshFilter>();
@@ -67,7 +67,7 @@ namespace UnityCommunityVoxelProject.Terrain
             ChunksGeometryGeneration.Instance.UpdateGeometry(blocks, meshFilter.mesh,
                                                              vertices, normals, triangles, uv);
 
-            meshCollider.sharedMesh = meshFilter.mesh;
+            //meshCollider.sharedMesh = meshFilter.mesh;
         }
 
         private void RecalculatePosition()
