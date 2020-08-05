@@ -1,7 +1,9 @@
 ﻿using System;
 using UnityEngine;
 
-public class AntiFloatPointOrigin : Singleton<AntiFloatPointOrigin>
+namespace UnityCommunityVoxelProject.Legacy
+{
+    public class AntiFloatPointOrigin : Singleton<AntiFloatPointOrigin>
 {
     [Range(16, 1024)]
     public float limit = 32;
@@ -82,4 +84,5 @@ public class AntiFloatPointOrigin : Singleton<AntiFloatPointOrigin>
         
         compensation = Vector3.zero;
     }
+}
 }

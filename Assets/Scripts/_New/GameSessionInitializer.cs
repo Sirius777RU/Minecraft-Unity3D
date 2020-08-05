@@ -1,5 +1,8 @@
 ﻿using System;
+using Unity.Mathematics;
+using UnityCommunityVoxelProject.Terrain;
 using UnityEngine;
+using UnityEngine.UI;
 
 namespace UnityCommunityVoxelProject.General
 {
@@ -11,6 +14,11 @@ namespace UnityCommunityVoxelProject.General
         }
 
         private void Start()
+        {
+            //TerrainProceduralGeneration.Instance.GenerateChunk();
+        }
+
+        private void Update()
         {
             
         }

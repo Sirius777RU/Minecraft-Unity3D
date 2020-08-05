@@ -1,10 +1,13 @@
 ﻿using System;
 using UnityEngine;
 
-public class SettingsHolder : Singleton<SettingsHolder>
+namespace UnityCommunityVoxelProject.Legacy
 {
-    public GameObject player;
+    public class SettingsHolder : Singleton<SettingsHolder>
+    {
+        public GameObject player;
     
-    [Space(10)]
-    public CurrentGenerationSettings currentGenerationSettings;
+        [Space(10)]
+        public CurrentGenerationSettings currentGenerationSettings;
+    }
 }

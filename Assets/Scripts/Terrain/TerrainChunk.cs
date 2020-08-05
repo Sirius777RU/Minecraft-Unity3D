@@ -81,96 +81,101 @@ namespace UnityCommunityVoxelProject.Legacy
             var chunkHeight = SettingsHolder.Instance.currentGenerationSettings.chunkHeight;
             
             for (int x = 1; x < chunkWidth + 1; x++)
+            for (int z = 1; z < chunkWidth + 1; z++)
+            for (int y = 0; y < chunkHeight; y++)
             {
-                for (int z = 1; z < chunkWidth + 1; z++)
+                var current = blocks[x, y, z];
+                
+                if (current != BlockType.Air && current != BlockType.Water)
                 {
-                    for (int y = 0; y < chunkHeight; y++)
+                    Vector3 blockPos = new Vector3(x - 1, y, z - 1);
+                    int     numFaces = 0;
+                    //no land above, build top face
+                    if (y < chunkHeight - 1 && Transparent(blocks[x, y + 1, z]))
                     {
-                        var current = blocks[x, y, z];
-                        if (current != BlockType.Air && current != BlockType.Water)
+                        verts.Add(blockPos + new Vector3(0, 1, 0));
+                        verts.Add(blockPos + new Vector3(0, 1, 1));
+                        verts.Add(blockPos + new Vector3(1, 1, 1));
+                        verts.Add(blockPos + new Vector3(1, 1, 0));
+                        numFaces++;
+
+                        uvs.AddRange(Block.blocks[blocks[x, y, z]].topPos.GetUVs());
+                    }
+
+                    //bottom
+                    if (y > 0 && Transparent(blocks[x, y - 1, z]))
+                    {
+                        verts.Add(blockPos + new Vector3(0, 0, 0));
+                        verts.Add(blockPos + new Vector3(1, 0, 0));
+                        verts.Add(blockPos + new Vector3(1, 0, 1));
+                        verts.Add(blockPos + new Vector3(0, 0, 1));
+                        numFaces++;
+
+                        uvs.AddRange(Block.blocks[blocks[x, y, z]].bottomPos.GetUVs());
+                    }
+
+                    //front
+                    if (Transparent(blocks[x, y, z - 1]))
+                    {
+                        verts.Add(blockPos + new Vector3(0, 0, 0));
+                        verts.Add(blockPos + new Vector3(0, 1, 0));
+                        verts.Add(blockPos + new Vector3(1, 1, 0));
+                        verts.Add(blockPos + new Vector3(1, 0, 0));
+                        numFaces++;
+
+                        uvs.AddRange(Block.blocks[blocks[x, y, z]].sidePos.GetUVs());
+                    }
+
+                    //right
+                    if (Transparent(blocks[x + 1, y, z]))
+                    {
+                        verts.Add(blockPos + new Vector3(1, 0, 0));
+                        verts.Add(blockPos + new Vector3(1, 1, 0));
+                        verts.Add(blockPos + new Vector3(1, 1, 1));
+                        verts.Add(blockPos + new Vector3(1, 0, 1));
+                        numFaces++;
+
+                        uvs.AddRange(Block.blocks[blocks[x, y, z]].sidePos.GetUVs());
+                    }
+
+                    //back
+                    if (Transparent(blocks[x, y, z + 1]))
+                    {
+                        verts.Add(blockPos + new Vector3(1, 0, 1));
+                        verts.Add(blockPos + new Vector3(1, 1, 1));
+                        verts.Add(blockPos + new Vector3(0, 1, 1));
+                        verts.Add(blockPos + new Vector3(0, 0, 1));
+                        numFaces++;
+
+                        uvs.AddRange(Block.blocks[blocks[x, y, z]].sidePos.GetUVs());
+                    }
+
+                    //left
+                    if (Transparent(blocks[x - 1, y, z]))
+                    {
+                        verts.Add(blockPos + new Vector3(0, 0, 1));
+                        verts.Add(blockPos + new Vector3(0, 1, 1));
+                        verts.Add(blockPos + new Vector3(0, 1, 0));
+                        verts.Add(blockPos + new Vector3(0, 0, 0));
+                        numFaces++;
+
+                        uvs.AddRange(Block.blocks[blocks[x, y, z]].sidePos.GetUVs());
+                    }
+
+                    int tl = verts.Count - 4 * numFaces;
+                    for (int i = 0; i < numFaces; i++)
+                    {
+                        tris.AddRange(new int[]
                         {
-                            Vector3 blockPos = new Vector3(x - 1, y, z - 1);
-                            int numFaces = 0;
-                            //no land above, build top face
-                            if (y < chunkHeight - 1 && Transparent(blocks[x, y + 1, z]))
-                            {
-                                verts.Add(blockPos + new Vector3(0, 1, 0));
-                                verts.Add(blockPos + new Vector3(0, 1, 1));
-                                verts.Add(blockPos + new Vector3(1, 1, 1));
-                                verts.Add(blockPos + new Vector3(1, 1, 0));
-                                numFaces++;
+                            tl + i * 4,
+                            tl + i * 4 + 1,
+                            tl + i * 4 + 2,
 
-                                uvs.AddRange(Block.blocks[blocks[x, y, z]].topPos.GetUVs());
-                            }
-
-                            //bottom
-                            if (y > 0 && Transparent(blocks[x, y - 1, z]))
-                            {
-                                verts.Add(blockPos + new Vector3(0, 0, 0));
-                                verts.Add(blockPos + new Vector3(1, 0, 0));
-                                verts.Add(blockPos + new Vector3(1, 0, 1));
-                                verts.Add(blockPos + new Vector3(0, 0, 1));
-                                numFaces++;
-
-                                uvs.AddRange(Block.blocks[blocks[x, y, z]].bottomPos.GetUVs());
-                            }
-
-                            //front
-                            if (Transparent(blocks[x, y, z - 1]))
-                            {
-                                verts.Add(blockPos + new Vector3(0, 0, 0));
-                                verts.Add(blockPos + new Vector3(0, 1, 0));
-                                verts.Add(blockPos + new Vector3(1, 1, 0));
-                                verts.Add(blockPos + new Vector3(1, 0, 0));
-                                numFaces++;
-
-                                uvs.AddRange(Block.blocks[blocks[x, y, z]].sidePos.GetUVs());
-                            }
-
-                            //right
-                            if (Transparent(blocks[x + 1, y, z]))
-                            {
-                                verts.Add(blockPos + new Vector3(1, 0, 0));
-                                verts.Add(blockPos + new Vector3(1, 1, 0));
-                                verts.Add(blockPos + new Vector3(1, 1, 1));
-                                verts.Add(blockPos + new Vector3(1, 0, 1));
-                                numFaces++;
-
-                                uvs.AddRange(Block.blocks[blocks[x, y, z]].sidePos.GetUVs());
-                            }
-
-                            //back
-                            if (Transparent(blocks[x, y, z + 1]))
-                            {
-                                verts.Add(blockPos + new Vector3(1, 0, 1));
-                                verts.Add(blockPos + new Vector3(1, 1, 1));
-                                verts.Add(blockPos + new Vector3(0, 1, 1));
-                                verts.Add(blockPos + new Vector3(0, 0, 1));
-                                numFaces++;
-
-                                uvs.AddRange(Block.blocks[blocks[x, y, z]].sidePos.GetUVs());
-                            }
-
-                            //left
-                            if (Transparent(blocks[x - 1, y, z]))
-                            {
-                                verts.Add(blockPos + new Vector3(0, 0, 1));
-                                verts.Add(blockPos + new Vector3(0, 1, 1));
-                                verts.Add(blockPos + new Vector3(0, 1, 0));
-                                verts.Add(blockPos + new Vector3(0, 0, 0));
-                                numFaces++;
-
-                                uvs.AddRange(Block.blocks[blocks[x, y, z]].sidePos.GetUVs());
-                            }
-
-                            int tl = verts.Count - 4 * numFaces;
-                            for (int i = 0; i < numFaces; i++)
-                            {
-                                tris.AddRange(new int[] { tl + i * 4, tl + i * 4 + 1, tl + i * 4 + 2, tl + i * 4, tl + i * 4 + 2, tl + i * 4 + 3 });
-                                //uvs.AddRange(Block.blocks[BlockType.Grass].topPos.GetUVs());
-
-                            }
-                        }
+                            tl + i * 4,
+                            tl + i * 4 + 2,
+                            tl + i * 4 + 3
+                        });
+                        //uvs.AddRange(Block.blocks[BlockType.Grass].topPos.GetUVs());
                     }
                 }
             }

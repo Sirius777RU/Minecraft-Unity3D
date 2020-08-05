@@ -12,5 +12,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3ea01048a5cc4ff193a45a2ac89a2121, type: 3}
   m_Name: Generation Settings
   m_EditorClassIdentifier: 
+  chunkWidth: 16
   chunkHeight: 64
   seaLevel: 28
