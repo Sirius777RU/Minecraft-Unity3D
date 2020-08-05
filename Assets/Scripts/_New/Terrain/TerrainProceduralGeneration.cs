@@ -2,6 +2,7 @@
 using Unity.Collections;
 using Unity.Jobs;
 using Unity.Mathematics;
+using UnityCommunityVoxelProject.Utility;
 using UnityEngine;
 using Random = Unity.Mathematics.Random;
 
@@ -9,10 +10,10 @@ namespace UnityCommunityVoxelProject.Terrain
 {
     public class TerrainProceduralGeneration : Singleton<TerrainProceduralGeneration>
     {
-        public void GenerateChunk(NativeArray<Block> blocks)
+        public void GenerateChunk(NativeArray<Block> blocks, int2 chunkPosition)
         {
-            int width = 16;
-            int height = 64;
+            int width = SettingsHolder.Instance.proceduralGeneration.chunkWidth;
+            int height = SettingsHolder.Instance.proceduralGeneration.chunkHeight;
             
             int areaSquare = width * width;
             int totalBlocksCount = (width * width) * height;
@@ -24,6 +25,8 @@ namespace UnityCommunityVoxelProject.Terrain
             
             ChunkGenerationJob chunkGenerationJob = new ChunkGenerationJob()
             {
+                chunkPosition = chunkPosition,
+                
                 width      = width,
                 height     = height,
                 areaSquare = areaSquare,
@@ -34,27 +37,32 @@ namespace UnityCommunityVoxelProject.Terrain
             var handle = chunkGenerationJob.Schedule(totalBlocksCount, 64);
             handle.Complete();
 
-            //Debug.Log(Time.realtimeSinceStartup - time);
+            //Debug.Log($"Generation took: {Time.realtimeSinceStartup - time}");
         }
-        
+
+        public float generationPlace;
         
         [BurstCompile(FloatPrecision.Low, FloatMode.Fast)]
         private struct ChunkGenerationJob : IJobParallelFor
         {
+            public float2 chunkPosition;
             public int width, height;
             public int areaSquare;
             public NativeArray<Block> blocks;
             
             public void Execute(int index)
             {
-                int z =  index / areaSquare;
-                int y = (index / width) % width;
-                int x =  index % width;
+                int i = index;
+                
+                int y = i / (width * width);
+                i = i % (width * width);
+                int z = i / width;
+                int x = i % width;
 
                 int seaLevel = 28;
                 
                 float heightMap = height * 0.5f + 
-                                  math.unlerp(-1, 1, noise.snoise(new float2(x, y) * 0.025f));
+                                  (math.unlerp(-1, 1, noise.snoise(new float2(x + chunkPosition.x, z + chunkPosition.y) * 0.025f)) * 10);
 
                 blocks[index] = Block.Air;
                 if (y <= heightMap)

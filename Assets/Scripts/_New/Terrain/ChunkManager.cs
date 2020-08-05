@@ -31,28 +31,21 @@ namespace UnityCommunityVoxelProject.Terrain
         }
         private void Local()
         {
+            float time = Time.realtimeSinceStartup;
+            int width = SettingsHolder.Instance.proceduralGeneration.chunkWidth;
+            
+            for (int y = 0; y < 16; y++)
+            for (int x = 0; x < 16; x++)
+            {
+                SimpleCreate(new Vector3(x * width, 0, y * width));
+            }
+        }
+
+        private void SimpleCreate(Vector3 position)
+        {
             var created = Instantiate(chunkPrefab, tf).GetComponent<Chunk>();
-            chunksPool.Add(created);
-
-            created.Initialize(blocksPerChunk);
-            created.Local();
-            
-            created = Instantiate(chunkPrefab, tf).GetComponent<Chunk>();
-            created.transform.position = new Vector3(16, 0, 0);
-            chunksPool.Add(created);
-
-            created.Initialize(blocksPerChunk);
-            created.Local();
-            
-            created = Instantiate(chunkPrefab, tf).GetComponent<Chunk>();
-            created.transform.position = new Vector3(16, 0, 16);
-            chunksPool.Add(created);
-
-            created.Initialize(blocksPerChunk);
-            created.Local();
-            
-            created = Instantiate(chunkPrefab, tf).GetComponent<Chunk>();
-            created.transform.position = new Vector3(0, 0, 16);
+            created.name = $"Chunk [x{position.x} z{position.z}]";
+            created.transform.position = position;
             chunksPool.Add(created);
 
             created.Initialize(blocksPerChunk);

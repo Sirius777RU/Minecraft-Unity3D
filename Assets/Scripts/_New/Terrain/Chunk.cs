@@ -17,19 +17,25 @@ namespace UnityCommunityVoxelProject.Terrain
         private MeshFilter meshFilter;
         private MeshRenderer meshRenderer;
         private MeshCollider meshCollider;
+        private Transform tf;
         
         private NativeList<float3> vertices;
+        private NativeList<float3> normals;
         private NativeList<int>    triangles;
         private NativeList<float2> uv;
+
+        private int2 chunkPosition;
     
         public void Initialize(int blocksCount)
         {
             blocks    = new NativeArray<Block>(blocksCount, Allocator.Persistent);
             
             vertices  = new NativeList<float3>(393300, Allocator.Persistent);
+            normals   = new NativeList<float3>(393300, Allocator.Persistent);
             triangles = new NativeList<int>(590004, Allocator.Persistent); 
             uv        = new NativeList<float2>(393300, Allocator.Persistent);
 
+            tf = GetComponent<Transform>();
             meshFilter = GetComponent<MeshFilter>();
             meshRenderer = GetComponent<MeshRenderer>();
             meshCollider = GetComponent<MeshCollider>();
@@ -37,7 +43,6 @@ namespace UnityCommunityVoxelProject.Terrain
             meshFilter.mesh = new Mesh();
             meshCollider.sharedMesh = meshFilter.mesh;
             meshFilter.mesh.MarkDynamic();
-            
             
             float width  = SettingsHolder.Instance.proceduralGeneration.chunkWidth;
             float height = SettingsHolder.Instance.proceduralGeneration.chunkHeight;
@@ -55,14 +60,25 @@ namespace UnityCommunityVoxelProject.Terrain
 
         public void Local()
         {
-            //TerrainProceduralGeneration.Instance.GenerateChunk(blocks);
+            RecalculatePosition();
+            
+            TerrainProceduralGeneration.Instance.GenerateChunk(blocks, chunkPosition);
             
             ChunksGeometryGeneration.Instance.UpdateGeometry(blocks, meshFilter.mesh,
-                                                             vertices, triangles, uv);
+                                                             vertices, normals, triangles, uv);
 
-            
-            meshCollider.enabled = false;
-            meshCollider.enabled = true;
+            meshCollider.sharedMesh = meshFilter.mesh;
+        }
+
+        private void RecalculatePosition()
+        {
+            int width  = SettingsHolder.Instance.proceduralGeneration.chunkWidth;
+            int height = SettingsHolder.Instance.proceduralGeneration.chunkHeight;
+
+            int x = Mathf.FloorToInt(tf.position.x / width) * width;
+            int z = Mathf.FloorToInt(tf.position.z / width) * width;
+
+            chunkPosition = new int2(x, z);
         }
 
         public void Dispose()
@@ -70,6 +86,7 @@ namespace UnityCommunityVoxelProject.Terrain
             blocks.Dispose();
 
             vertices.Dispose();
+            normals.Dispose();
             triangles.Dispose();
             uv.Dispose();
         }
