@@ -49,8 +49,17 @@ namespace UnityCommunityVoxelProject.General.Controls
                 currentY = desiredY;
             }
 
-            tf.localRotation = Quaternion.Euler(currentY, 0, 0);
-            PlayerMovement.Instance.tf.eulerAngles = Vector3.up * currentX;
+            if (PlayerMovement.Instance.tf)
+            {
+                PlayerMovement.Instance.tf.eulerAngles = Vector3.up * currentX;
+                tf.localRotation = Quaternion.Euler(currentY, 0, 0);
+            }
+            else
+            {
+                tf.localRotation = Quaternion.Euler(currentY, currentX, 0);
+            }
+            
+            
         }
     }
 }

@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using Unity.Collections;
 using Unity.Mathematics;
+using UnityCommunityVoxelProject.Serialization;
 using UnityCommunityVoxelProject.Utility;
 using UnityEngine;
 
@@ -9,17 +9,17 @@ namespace UnityCommunityVoxelProject.Terrain
 {
     public class ChunkManager : Singleton<ChunkManager>
     {
-        public bool useJobSystem = true;
-        
         public GameObject chunkPrefab;
 
+        public WorldData worldData;
+        
         private List<Chunk> usedChunks = new List<Chunk>();
         private List<Chunk> chunksPool = new List<Chunk>();
 
         private Transform tf;
-        private int       blocksPerChunk;
+        [HideInInspector] public int blocksPerChunk;
 
-        private void Start()
+        public void Initialize()
         {
             tf = GetComponent<Transform>();
             blocksPerChunk = SettingsHolder.Instance.proceduralGeneration.chunkWidth *
@@ -29,16 +29,39 @@ namespace UnityCommunityVoxelProject.Terrain
 
             Local();
         }
+
+        private void Update()
+        {
+            if (Input.GetKeyDown(KeyCode.Alpha2))
+            {
+                Local();
+            }
+        }
+
         private void Local()
         {
             float time = Time.realtimeSinceStartup;
-            int width = SettingsHolder.Instance.proceduralGeneration.chunkWidth;
+            int width  = SettingsHolder.Instance.proceduralGeneration.chunkWidth;
+
+            int i = 0;
             
             for (int y = 0; y < 16; y++)
             for (int x = 0; x < 16; x++)
             {
-                SimpleCreate(new Vector3(x * width, 0, y * width));
+                var generatedChunkData = 
+                    TerrainProceduralGeneration.Instance.GenerateChunk(new ProtoInt2(x * width, y * width)); 
+                
+                worldData.chunks.Add(new ProtoInt2(x, y), generatedChunkData);
+                i++;
             }
+
+            Debug.Log($"Terrain data generation took around {Time.realtimeSinceStartup - time}s. Generated {i} chunks.");
+
+            /*for (int y = 0; y < 16; y++)
+            for (int x = 0; x < 16; x++)
+            {
+                SimpleCreate(new Vector3(x * width, 0, y * width));
+            }*/
         }
 
         private void SimpleCreate(Vector3 position)

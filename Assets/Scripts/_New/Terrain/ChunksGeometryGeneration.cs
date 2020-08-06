@@ -11,11 +11,12 @@ namespace UnityCommunityVoxelProject.Terrain
 {
     public class ChunksGeometryGeneration : Singleton<ChunksGeometryGeneration>
     {
+        public bool useJobSystem = true;
+        
         public void UpdateGeometry(NativeArray<Block> blocks, Mesh mesh,
                                    NativeList<float3> vertices, NativeList<float3> normals, NativeList<int> triangles, NativeList<float2> uv)
         {
             var time = Time.realtimeSinceStartup;
-            bool useJobs = ChunkManager.Instance.useJobSystem;
             
             mesh.name = "chunkMesh";
             
@@ -36,7 +37,7 @@ namespace UnityCommunityVoxelProject.Terrain
                 uv        = uv
             };
 
-            if (useJobs)
+            if (useJobSystem)
             {
                 var generationHandle = generateMeshJob.Schedule();
                 generationHandle.Complete();
@@ -75,7 +76,7 @@ namespace UnityCommunityVoxelProject.Terrain
                 uv        = uv
             };
 
-            if (useJobs)
+            if (useJobSystem)
             {
                 var writeToMeshHandle = writeToMeshJob.Schedule();
                 writeToMeshHandle.Complete();

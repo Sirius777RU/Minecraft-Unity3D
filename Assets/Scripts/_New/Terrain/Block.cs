@@ -4,7 +4,8 @@ using UnityEngine;
 
 namespace UnityCommunityVoxelProject.Terrain
 {
-    public enum Block : uint
+    
+    public enum Block : byte
     {
         Air, 
         Dirt, 

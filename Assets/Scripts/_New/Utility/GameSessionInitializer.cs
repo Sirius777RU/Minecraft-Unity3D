@@ -1,26 +1,23 @@
 ﻿using System;
 using Unity.Mathematics;
+using UnityCommunityVoxelProject.Serialization;
 using UnityCommunityVoxelProject.Terrain;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace UnityCommunityVoxelProject.General
+namespace UnityCommunityVoxelProject.Utility
 {
     public class GameSessionInitializer : Singleton<GameSessionInitializer>
     {
         protected override void Awake()
         {
-            base.Awake();
+            
         }
 
         private void Start()
         {
-            //TerrainProceduralGeneration.Instance.GenerateChunk();
-        }
-
-        private void Update()
-        {
-            
+           SaveLoadSystem.Instance.Initialize();
+           ChunkManager.Instance.Initialize();
         }
 
         private void OnApplicationQuit()

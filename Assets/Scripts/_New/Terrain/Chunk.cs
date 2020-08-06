@@ -43,7 +43,7 @@ namespace UnityCommunityVoxelProject.Terrain
             meshFilter.mesh = new Mesh();
             meshCollider.sharedMesh = meshFilter.mesh;
             meshFilter.mesh.MarkDynamic();
-            
+
             float width  = SettingsHolder.Instance.proceduralGeneration.chunkWidth;
             float height = SettingsHolder.Instance.proceduralGeneration.chunkHeight;
             
@@ -67,7 +67,7 @@ namespace UnityCommunityVoxelProject.Terrain
             ChunksGeometryGeneration.Instance.UpdateGeometry(blocks, meshFilter.mesh,
                                                              vertices, normals, triangles, uv);
 
-            //meshCollider.sharedMesh = meshFilter.mesh;
+            meshCollider.sharedMesh = meshFilter.mesh;
         }
 
         private void RecalculatePosition()
