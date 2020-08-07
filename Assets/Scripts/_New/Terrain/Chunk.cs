@@ -68,12 +68,9 @@ namespace UnityVoxelCommunityProject.Terrain
             TerrainProceduralGeneration.Instance.GenerateChunk(chunkPosition, withNeighbors: true);
             
             ChunkManager.Instance.GetBlocksVolume(volumeStart, volumeEnd, blocks);
-
-            bool debug = (chunkPosition.x == 0 && chunkPosition.y == 0);
             
             ChunksGeometryGeneration.Instance.UpdateGeometry(blocks, meshFilter.mesh,
-                                                             vertices, normals, triangles, uv, 
-                                                             debug, chunkPosition);
+                                                             vertices, normals, triangles, uv);
 
             meshCollider.sharedMesh = meshFilter.mesh;
         }
@@ -90,7 +87,7 @@ namespace UnityVoxelCommunityProject.Terrain
             
             volumeStart = new int3(from.x, 0, from.y);
             volumeEnd = new int3(to.x, height, to.y);
-            Debug.Log(chunkPosition);
+            //Debug.Log(chunkPosition);
         }
 
         public void Dispose()

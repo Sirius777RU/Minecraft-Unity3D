@@ -27,8 +27,16 @@ namespace UnityVoxelCommunityProject.Serialization
                 Debug.Log($"Creating folder for save files at \"{pathToSaveFiles}\".");
                 Directory.CreateDirectory(pathToSaveFiles);
             }
-
-            SaveWorld();
+            
+            WorldData worldData = ChunkManager.Instance.worldData;
+            
+            if (ChunkManager.Instance.worldData == null)
+            {
+                worldData        = new WorldData();
+                worldData.chunks = new Dictionary<ProtoInt2, ChunkData>();
+                
+                ChunkManager.Instance.worldData = worldData;
+            }
         }
 
         private void Update()
@@ -47,15 +55,12 @@ namespace UnityVoxelCommunityProject.Serialization
         private void SaveWorld()
         {
             WorldData worldData = ChunkManager.Instance.worldData;
-            
-            if (ChunkManager.Instance.worldData == null)
-            {
-                worldData  = new WorldData();
-                worldData.chunks = new Dictionary<ProtoInt2, ChunkData>();
-                
-                ChunkManager.Instance.worldData = worldData;
-            }
 
+            if (worldData == null)
+            {
+                throw new Exception("There is no world data to save for some reason. ");
+            }
+            
             float time = Time.realtimeSinceStartup;
             if (useCompression)
             {
@@ -64,7 +69,6 @@ namespace UnityVoxelCommunityProject.Serialization
                     worldData.chunks[new ProtoInt2(0, 0)].blocks[0] = Block.Leaves;
                     Debug.Log(worldData.chunks[new ProtoInt2(0, 0)].blocks[0]);
                 }
-                
 
                 var fileStream = File.Create(pathToSaveFiles + "Save.world");
                 DeflateStream zlibStream = new DeflateStream(fileStream, CompressionMode.Compress, CompressionLevel.Default);

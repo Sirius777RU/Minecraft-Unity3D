@@ -128,7 +128,7 @@ namespace UnityVoxelCommunityProject.Terrain
             }
         }
         
-        [BurstCompile(FloatPrecision.Low, FloatMode.Fast)]
+        [BurstCompile(FloatPrecision.Low, FloatMode.Fast, CompileSynchronously = true)]
         private struct ChunkGenerationJob : IJobParallelFor
         {
             public NativeArray<Block> blocks;
@@ -148,6 +148,8 @@ namespace UnityVoxelCommunityProject.Terrain
                 i = i % (areaSquare);
                 z = i / width;
                 x = i % width;
+                
+                //TODO proper generation, not just air/dirt.
                 
                 float heightMap = height * 0.5f + 
                                  (math.unlerp(-1, 1, noise.snoise(new float2(x + (chunkPosition.x * 16), z + (chunkPosition.y * 16)) * 0.025f)) * 10);

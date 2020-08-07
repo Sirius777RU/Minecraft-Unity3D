@@ -11,7 +11,7 @@ namespace UnityVoxelCommunityProject.Utility
     {
         protected override void Awake()
         {
-            
+            base.Awake();
         }
 
         private void Start()
