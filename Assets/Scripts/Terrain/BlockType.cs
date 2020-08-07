@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 
-namespace UnityCommunityVoxelProject.Legacy
+namespace UnityVoxelCommunityProject.Legacy
 {
     public enum BlockType 
     { 

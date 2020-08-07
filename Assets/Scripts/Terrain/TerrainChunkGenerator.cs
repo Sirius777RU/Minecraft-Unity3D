@@ -5,7 +5,7 @@ using System.Linq;
 using System.Threading;
 using UnityEngine;
 
-namespace UnityCommunityVoxelProject.Legacy
+namespace UnityVoxelCommunityProject.Legacy
 {
     public class TerrainChunkGenerator
     {

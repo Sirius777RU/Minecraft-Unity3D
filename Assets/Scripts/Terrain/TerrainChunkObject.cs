@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace UnityCommunityVoxelProject.Legacy
+namespace UnityVoxelCommunityProject.Legacy
 {
     class TerrainChunkObject : MonoBehaviour {
         private TerrainChunk chunk = null;

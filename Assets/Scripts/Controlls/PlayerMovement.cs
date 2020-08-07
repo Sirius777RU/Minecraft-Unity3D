@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityCommunityVoxelProject.Legacy;
+using UnityVoxelCommunityProject.Legacy;
 using Random = UnityEngine.Random;
 
 [SelectionBase]

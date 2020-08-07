@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace UnityCommunityVoxelProject.Legacy
+namespace UnityVoxelCommunityProject.Legacy
 {
     public class WaterChunk : MonoBehaviour
     {

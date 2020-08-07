@@ -1,7 +1,7 @@
 ﻿using System;
 using UnityEngine;
 using UnityEngine.UI;
-using UnityCommunityVoxelProject.Legacy;
+using UnityVoxelCommunityProject.Legacy;
 
 public class CurrentlyInBlock : MonoBehaviour
 {

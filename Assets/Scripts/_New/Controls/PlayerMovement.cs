@@ -1,7 +1,7 @@
 ﻿using System;
 using UnityEngine;
 
-namespace UnityCommunityVoxelProject.General.Controls
+namespace UnityVoxelCommunityProject.General.Controls
 {
     [SelectionBase][RequireComponent(typeof(CharacterController))]
     public class PlayerMovement : Singleton<PlayerMovement>

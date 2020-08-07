@@ -5,7 +5,7 @@ using System.Runtime.InteropServices;
 using Unity.Profiling;
 using UnityEngine;
 
-namespace UnityCommunityVoxelProject.Legacy
+namespace UnityVoxelCommunityProject.Legacy
 {
     public class TerrainChunk
     {

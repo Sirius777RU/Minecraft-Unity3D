@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 using Unity.Profiling;
 using UnityEngine;
 
-namespace UnityCommunityVoxelProject.Legacy
+namespace UnityVoxelCommunityProject.Legacy
 {
     public class TerrainGenerator : MonoBehaviour
     {

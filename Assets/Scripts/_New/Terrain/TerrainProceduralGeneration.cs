@@ -2,13 +2,12 @@
 using Unity.Collections;
 using Unity.Jobs;
 using Unity.Mathematics;
-using UnityCommunityVoxelProject.Serialization;
-using UnityCommunityVoxelProject.Utility;
 using UnityEngine;
-
+using UnityVoxelCommunityProject.Serialization;
+using UnityVoxelCommunityProject.Utility;
 using Random = Unity.Mathematics.Random;
 
-namespace UnityCommunityVoxelProject.Terrain
+namespace UnityVoxelCommunityProject.Terrain
 {
     public class TerrainProceduralGeneration : Singleton<TerrainProceduralGeneration>
     {
@@ -57,6 +56,11 @@ namespace UnityCommunityVoxelProject.Terrain
 
         public ChunkData GenerateChunk(int2 chunkPosition)
         {
+            if (ChunkManager.Instance.worldData.chunks.ContainsKey(chunkPosition))
+            {
+                return ChunkManager.Instance.worldData.chunks[chunkPosition];
+            }
+            
             ChunkData chunkData = new ChunkData()
             {
                 blocks = new Block[ChunkManager.Instance.blocksPerChunk]
@@ -101,9 +105,28 @@ namespace UnityCommunityVoxelProject.Terrain
             chunkGenerationJob.blocks.CopyTo(chunkData.blocks);
             chunkGenerationJob.Dispose();
             
+            ChunkManager.Instance.worldData.chunks.Add(chunkPosition, chunkData);
+            
             return chunkData;
         }
-        
+
+        public void GenerateChunk(int2 chunkPosition, bool withNeighbors)
+        {
+            if (!withNeighbors)
+            {
+                GenerateChunk(chunkPosition);
+            }
+            else
+            {
+                chunkPosition -= new int2(1, 1);
+                
+                for (int y = 0; y < 3; y++)
+                for (int x = 0; x < 3; x++)
+                {
+                    GenerateChunk(chunkPosition + new int2(x, y));
+                }
+            }
+        }
         
         [BurstCompile(FloatPrecision.Low, FloatMode.Fast)]
         private struct ChunkGenerationJob : IJobParallelFor
@@ -127,7 +150,7 @@ namespace UnityCommunityVoxelProject.Terrain
                 x = i % width;
                 
                 float heightMap = height * 0.5f + 
-                                 (math.unlerp(-1, 1, noise.snoise(new float2(x + chunkPosition.x, z + chunkPosition.y) * 0.025f)) * 10);
+                                 (math.unlerp(-1, 1, noise.snoise(new float2(x + (chunkPosition.x * 16), z + (chunkPosition.y * 16)) * 0.025f)) * 10);
 
                 blocks[index] = Block.Air;
                 if (y <= heightMap)

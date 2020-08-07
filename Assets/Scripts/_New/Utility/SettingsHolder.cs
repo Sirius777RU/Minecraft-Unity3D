@@ -1,7 +1,7 @@
-﻿using UnityCommunityVoxelProject.General;
-using UnityEngine;
+﻿using UnityEngine;
+using UnityVoxelCommunityProject.General;
 
-namespace UnityCommunityVoxelProject.Utility
+namespace UnityVoxelCommunityProject.Utility
 {
     public class SettingsHolder : Singleton<SettingsHolder>
     {

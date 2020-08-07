@@ -4,7 +4,7 @@ using ProtoBuf;
 using Unity.Mathematics;
 using UnityEngine;
 
-namespace UnityCommunityVoxelProject.Serialization
+namespace UnityVoxelCommunityProject.Serialization
 {
     [ProtoContract]
     public struct  ProtoInt2

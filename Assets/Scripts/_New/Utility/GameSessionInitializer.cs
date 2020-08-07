@@ -1,11 +1,11 @@
 ﻿using System;
 using Unity.Mathematics;
-using UnityCommunityVoxelProject.Serialization;
-using UnityCommunityVoxelProject.Terrain;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityVoxelCommunityProject.Serialization;
+using UnityVoxelCommunityProject.Terrain;
 
-namespace UnityCommunityVoxelProject.Utility
+namespace UnityVoxelCommunityProject.Utility
 {
     public class GameSessionInitializer : Singleton<GameSessionInitializer>
     {

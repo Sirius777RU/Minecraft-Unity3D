@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Rendering.PostProcessing;
-using UnityCommunityVoxelProject.Legacy;
+using UnityVoxelCommunityProject.Legacy;
 
 public class UnderwaterEffect : MonoBehaviour
 {

@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 
-namespace UnityCommunityVoxelProject.General
+namespace UnityVoxelCommunityProject.General
 {
     [CreateAssetMenu(fileName = "Player Movement Settings", menuName = "Settings/Player Movement Settings", order = 0)]
     public class PlayerMovementSettings : ScriptableObject

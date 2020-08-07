@@ -3,7 +3,7 @@ using Unity.Mathematics;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace UnityCommunityVoxelProject.Utility
+namespace UnityVoxelCommunityProject.Utility
 {
     public class NoisePreview : MonoBehaviour
     {

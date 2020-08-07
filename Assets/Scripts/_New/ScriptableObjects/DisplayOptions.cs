@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 
-namespace UnityCommunityVoxelProject.General
+namespace UnityVoxelCommunityProject.General
 {
     [CreateAssetMenu(fileName = "DisplayOptions", menuName = "Settings/DisplayOptions", order = 0)]
     public class DisplayOptions : ScriptableObject

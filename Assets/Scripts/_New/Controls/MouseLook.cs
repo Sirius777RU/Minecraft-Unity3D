@@ -2,7 +2,7 @@
 using Unity.Mathematics;
 using UnityEngine;
 
-namespace UnityCommunityVoxelProject.General.Controls
+namespace UnityVoxelCommunityProject.General.Controls
 {
     public class MouseLook : Singleton<MouseLook>
     {

@@ -4,9 +4,9 @@ using System.Collections.Generic;
 using Unity.Collections;
 using Unity.Mathematics;
 using UnityEngine;
-using UnityCommunityVoxelProject.Utility;
+using UnityVoxelCommunityProject.Utility;
 
-namespace UnityCommunityVoxelProject.Terrain
+namespace UnityVoxelCommunityProject.Terrain
 {
     [RequireComponent(typeof(MeshFilter))]
     [RequireComponent(typeof(MeshRenderer))]
@@ -25,6 +25,8 @@ namespace UnityCommunityVoxelProject.Terrain
         private NativeList<float2> uv;
 
         private int2 chunkPosition;
+        private int3 volumeStart, volumeEnd;
+        private int width, height, widthSqr;
     
         public void Initialize(int blocksCount)
         {
@@ -43,9 +45,10 @@ namespace UnityCommunityVoxelProject.Terrain
             meshFilter.mesh = new Mesh();
             meshCollider.sharedMesh = meshFilter.mesh;
             meshFilter.mesh.MarkDynamic();
-
-            float width  = SettingsHolder.Instance.proceduralGeneration.chunkWidth;
-            float height = SettingsHolder.Instance.proceduralGeneration.chunkHeight;
+            
+            width  = SettingsHolder.Instance.proceduralGeneration.chunkWidth;
+            height = SettingsHolder.Instance.proceduralGeneration.chunkHeight;
+            widthSqr = width * width;
             
             meshFilter.mesh.bounds = new Bounds(new Vector3(width/2, height/2, width/2), new Vector3(width, height, width));
         }
@@ -62,23 +65,32 @@ namespace UnityCommunityVoxelProject.Terrain
         {
             RecalculatePosition();
             
-            TerrainProceduralGeneration.Instance.GenerateChunk(blocks, chunkPosition);
+            TerrainProceduralGeneration.Instance.GenerateChunk(chunkPosition, withNeighbors: true);
+            
+            ChunkManager.Instance.GetBlocksVolume(volumeStart, volumeEnd, blocks);
+
+            bool debug = (chunkPosition.x == 0 && chunkPosition.y == 0);
             
             ChunksGeometryGeneration.Instance.UpdateGeometry(blocks, meshFilter.mesh,
-                                                             vertices, normals, triangles, uv);
+                                                             vertices, normals, triangles, uv, 
+                                                             debug, chunkPosition);
 
             meshCollider.sharedMesh = meshFilter.mesh;
         }
 
         private void RecalculatePosition()
         {
-            int width  = SettingsHolder.Instance.proceduralGeneration.chunkWidth;
-            int height = SettingsHolder.Instance.proceduralGeneration.chunkHeight;
-
-            int x = Mathf.FloorToInt(tf.position.x / width) * width;
-            int z = Mathf.FloorToInt(tf.position.z / width) * width;
+            int x = Mathf.FloorToInt(tf.position.x / width);
+            int z = Mathf.FloorToInt(tf.position.z / width);
 
             chunkPosition = new int2(x, z);
+            
+            int2 from = ((chunkPosition * 16) + new int2(-1, -1));
+            int2 to   = ((chunkPosition * 16) + new int2(17, 17));
+            
+            volumeStart = new int3(from.x, 0, from.y);
+            volumeEnd = new int3(to.x, height, to.y);
+            Debug.Log(chunkPosition);
         }
 
         public void Dispose()

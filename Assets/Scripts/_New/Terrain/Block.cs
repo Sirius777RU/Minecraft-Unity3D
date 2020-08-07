@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace UnityCommunityVoxelProject.Terrain
+namespace UnityVoxelCommunityProject.Terrain
 {
     
     public enum Block : byte

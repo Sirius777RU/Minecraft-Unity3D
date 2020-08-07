@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
-using UnityCommunityVoxelProject.Legacy;
+using UnityVoxelCommunityProject.Legacy;
 
 public class Inventory : MonoBehaviour
 {

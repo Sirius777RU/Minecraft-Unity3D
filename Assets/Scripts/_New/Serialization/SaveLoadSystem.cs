@@ -5,12 +5,12 @@ using System.IO;
 using System.Linq;
 using ProtoBuf;
 using Unity.Mathematics;
-using UnityCommunityVoxelProject.Terrain;
 using Application = UnityEngine.Application;
 using Ionic.Zlib;
+using UnityVoxelCommunityProject.Terrain;
 using CompressionLevel = Ionic.Zlib.CompressionLevel;
 
-namespace UnityCommunityVoxelProject.Serialization
+namespace UnityVoxelCommunityProject.Serialization
 {
     public class SaveLoadSystem : Singleton<SaveLoadSystem>
     {
