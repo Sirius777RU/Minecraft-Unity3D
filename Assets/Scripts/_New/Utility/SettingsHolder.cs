@@ -7,5 +7,6 @@ namespace UnityVoxelCommunityProject.Utility
     {
         public CurrentGenerationSettings proceduralGeneration;
         public DisplayOptions displayOptions;
+        public BlocksDataSettings blockData;
     }
 }

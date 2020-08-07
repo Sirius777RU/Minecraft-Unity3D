@@ -150,15 +150,40 @@ namespace UnityVoxelCommunityProject.Terrain
                 x = i % width;
                 
                 //TODO proper generation, not just air/dirt.
+                float snoiseResult = (math.unlerp(-1, 1, noise.snoise(new float2(x + (chunkPosition.x * 16), z + (chunkPosition.y * 16)) * 0.025f)) * 10);  
                 
-                float heightMap = height * 0.5f + 
-                                 (math.unlerp(-1, 1, noise.snoise(new float2(x + (chunkPosition.x * 16), z + (chunkPosition.y * 16)) * 0.025f)) * 10);
+                float heightMap = height * 0.5f + snoiseResult;
 
+                float stoneLevel = (height * 0.25f) + snoiseResult / 2;
+                
                 blocks[index] = Block.Air;
-                if (y <= heightMap)
+                if (y <= stoneLevel)
+                {
+                    blocks[index] = Block.Stone;
+                }
+                else if (y <= heightMap)
                 {
                     blocks[index] = Block.Dirt;
+
+                    if (y > heightMap - 1 && y > seaLevel - 2)
+                    {
+                        blocks[index] = Block.Grass;
+                    }
                 }
+
+                if (x == 7 && z == 7)
+                {
+                    blocks[index] = Block.Air;
+                }
+
+                /*if (y <= 1)
+                {
+                    Debug.Log(index);
+                }*/
+                /*if (y <= 1 && index >= 1)
+                {
+                    blocks[index] = Block.Core;
+                }*/
             }
 
             public void Dispose()

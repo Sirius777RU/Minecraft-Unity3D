@@ -2,7 +2,7 @@
 
 namespace UnityVoxelCommunityProject.General
 {
-    [CreateAssetMenu(fileName = "DisplayOptions", menuName = "Settings/DisplayOptions", order = 0)]
+    [CreateAssetMenu(fileName = "Display Options", menuName = "Settings/Display Options", order = 0)]
     public class DisplayOptions : ScriptableObject
     {
         [Range(4, 128)] public int chunkRenderDistance = 16;

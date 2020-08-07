@@ -1,0 +1,119 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 48423ece20ce4ee4b72780b8b74ebb51, type: 3}
+  m_Name: Blocks Data
+  m_EditorClassIdentifier: 
+  blocks:
+  - name: Air
+    blockType: 0
+    atlasMapping:
+      defaultTexture:
+        x: 0
+        y: 0
+      sideTexture:
+        x: -1
+        y: -1
+      bottomTexture:
+        x: -1
+        y: -1
+    durability: Infinity
+  - name: Dirt
+    blockType: 1
+    atlasMapping:
+      defaultTexture:
+        x: 0
+        y: 0
+      sideTexture:
+        x: -1
+        y: -1
+      bottomTexture:
+        x: -1
+        y: -1
+    durability: 5
+  - name: Grass
+    blockType: 2
+    atlasMapping:
+      defaultTexture:
+        x: 1
+        y: 0
+      sideTexture:
+        x: 0
+        y: 1
+      bottomTexture:
+        x: 0
+        y: 0
+    durability: 10
+  - name: Stone
+    blockType: 3
+    atlasMapping:
+      defaultTexture:
+        x: 0
+        y: 2
+      sideTexture:
+        x: -1
+        y: -1
+      bottomTexture:
+        x: -1
+        y: -1
+    durability: 50
+  - name: Wood
+    blockType: 4
+    atlasMapping:
+      defaultTexture:
+        x: 0
+        y: 3
+      sideTexture:
+        x: 0
+        y: 4
+      bottomTexture:
+        x: -1
+        y: -1
+    durability: 30
+  - name: Foliage
+    blockType: 5
+    atlasMapping:
+      defaultTexture:
+        x: 0
+        y: 5
+      sideTexture:
+        x: -1
+        y: -1
+      bottomTexture:
+        x: -1
+        y: -1
+    durability: 5
+  - name: Sand
+    blockType: 7
+    atlasMapping:
+      defaultTexture:
+        x: 2
+        y: 6
+      sideTexture:
+        x: -1
+        y: -1
+      bottomTexture:
+        x: -1
+        y: -1
+    durability: 5
+  - name: Core
+    blockType: 8
+    atlasMapping:
+      defaultTexture:
+        x: 3
+        y: 0
+      sideTexture:
+        x: -1
+        y: -1
+      bottomTexture:
+        x: -1
+        y: -1
+    durability: Infinity

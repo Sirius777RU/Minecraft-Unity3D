@@ -36,7 +36,7 @@ namespace UnityVoxelCommunityProject.Utility
             int     colorCounter = 0;
 
             Color currentColor;
-            float baseValue = 0.5f;
+            //float baseValue = 0.5f;
             
             
             for (int y = 0; y < 256; y++)

@@ -21,12 +21,15 @@ namespace UnityVoxelCommunityProject.Terrain
         [HideInInspector] public int blocksPerChunk;
         private CurrentGenerationSettings settings;
         private int width, height, widthSqr;
+
+        public NativeArray<int2> atlasMap;
         
         public void Initialize()
         {
             tf = GetComponent<Transform>();
+            SettingsHolder.Instance.blockData.GrabUVMappingArray(out atlasMap, Allocator.Persistent);
             settings = SettingsHolder.Instance.proceduralGeneration;
-            
+
             width    = settings.chunkWidth;
             height   = settings.chunkHeight;
             widthSqr = width * width;
@@ -34,6 +37,7 @@ namespace UnityVoxelCommunityProject.Terrain
             //Block count here gets extra 1 blocks for each chunk side so we could check neighboring to current chunk blocks.
             blocksPerChunk = (width + 2) * (width + 2) * 
                              height;
+
             
             Local();
         }
@@ -117,6 +121,8 @@ namespace UnityVoxelCommunityProject.Terrain
 
             for (int i = 0; i < chunksPool.Count; i++)
                 chunksPool[i].Dispose();
+
+            atlasMap.Dispose();
         }
     }
 }

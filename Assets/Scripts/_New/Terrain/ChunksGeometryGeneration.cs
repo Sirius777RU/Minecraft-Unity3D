@@ -5,6 +5,7 @@ using Unity.Jobs;
 using Unity.Mathematics;
 using UnityEngine;
 using UnityEngine.Rendering;
+using UnityVoxelCommunityProject.General;
 using UnityVoxelCommunityProject.Utility;
 
 namespace UnityVoxelCommunityProject.Terrain
@@ -27,6 +28,7 @@ namespace UnityVoxelCommunityProject.Terrain
             GenerateMeshJob generateMeshJob = new GenerateMeshJob()
             {
                 blocks = blocks,
+                atlasMap = ChunkManager.Instance.atlasMap,
                 
                 width  = SettingsHolder.Instance.proceduralGeneration.chunkWidth,
                 height = SettingsHolder.Instance.proceduralGeneration.chunkHeight,
@@ -105,6 +107,8 @@ namespace UnityVoxelCommunityProject.Terrain
         {
             //TODO feed slightly bigger array of data.
             [ReadOnly] public NativeArray<Block> blocks;
+            
+            [ReadOnly] public NativeArray<int2> atlasMap;
             public int width, height;
             
             [WriteOnly] public NativeList<float3> vertices;
@@ -167,6 +171,7 @@ namespace UnityVoxelCommunityProject.Terrain
                         left  = blocks[index];
                         
                         float3 blockPos = new float3(x - 1, y - 1, z - 1);
+                        float2 blockUV;
                         int fCount = 0;
                         
                         if (top == Block.Air)
@@ -181,10 +186,11 @@ namespace UnityVoxelCommunityProject.Terrain
                             normals.Add(new float3(0, 1, 0));
                             normals.Add(new float3(0, 1, 0));
 
-                            uv.Add(new float2(.001f, .001f));
-                            uv.Add(new float2(.001f, .0615f));
-                            uv.Add(new float2(.0615f, .0615f));
-                            uv.Add(new float2(.0615f, .001f));
+                            blockUV = atlasMap[(((int) current) * 3)];
+                            uv.Add(new float2(blockUV.x / 16f + .001f, blockUV.y / 16f + .001f));
+                            uv.Add(new float2(blockUV.x / 16f + .001f, (blockUV.y + 1) / 16f - .001f));
+                            uv.Add(new float2((blockUV.x + 1) / 16f - .001f, (blockUV.y + 1) / 16f - .001f));
+                            uv.Add(new float2((blockUV.x + 1) / 16f - .001f, blockUV.y / 16f + .001f));
 
                             vCount += 4;
                             fCount++;
@@ -203,10 +209,11 @@ namespace UnityVoxelCommunityProject.Terrain
                             normals.Add(new float3(0, -1, 1));
                             normals.Add(new float3(0, -1, 1));
                             
-                            uv.Add(new float2(.001f, .001f));
-                            uv.Add(new float2(.001f, .0615f));
-                            uv.Add(new float2(.0615f, .0615f));
-                            uv.Add(new float2(.0615f, .001f));
+                            blockUV = atlasMap[(((int) current) * 3) + 2];
+                            uv.Add(new float2(blockUV.x / 16f + .001f, blockUV.y / 16f + .001f));
+                            uv.Add(new float2(blockUV.x / 16f + .001f, (blockUV.y + 1) / 16f - .001f));
+                            uv.Add(new float2((blockUV.x + 1) / 16f - .001f, (blockUV.y + 1) / 16f - .001f));
+                            uv.Add(new float2((blockUV.x + 1) / 16f - .001f, blockUV.y / 16f + .001f));
 
                             vCount += 4;
                             fCount++;
@@ -224,10 +231,11 @@ namespace UnityVoxelCommunityProject.Terrain
                             normals.Add(new float3(0, 0, -1));
                             normals.Add(new float3(0, 0, -1));
 
-                            uv.Add(new float2(.001f, .001f));
-                            uv.Add(new float2(.001f, .0615f));
-                            uv.Add(new float2(.0615f, .0615f));
-                            uv.Add(new float2(.0615f, .001f));
+                            blockUV = atlasMap[(((int) current) * 3) + 1];
+                            uv.Add(new float2(blockUV.x / 16f + .001f, blockUV.y / 16f + .001f));
+                            uv.Add(new float2(blockUV.x / 16f + .001f, (blockUV.y + 1) / 16f - .001f));
+                            uv.Add(new float2((blockUV.x + 1) / 16f - .001f, (blockUV.y + 1) / 16f - .001f));
+                            uv.Add(new float2((blockUV.x + 1) / 16f - .001f, blockUV.y / 16f + .001f));
 
                             vCount += 4;
                             fCount++;
@@ -245,10 +253,11 @@ namespace UnityVoxelCommunityProject.Terrain
                             normals.Add(new float3(0, 0, 1));
                             normals.Add(new float3(0, 0, 1));
                             
-                            uv.Add(new float2(.001f, .001f));
-                            uv.Add(new float2(.001f, .0615f));
-                            uv.Add(new float2(.0615f, .0615f));
-                            uv.Add(new float2(.0615f, .001f));
+                            blockUV = atlasMap[(((int) current) * 3) + 1];
+                            uv.Add(new float2(blockUV.x / 16f + .001f, blockUV.y / 16f + .001f));
+                            uv.Add(new float2(blockUV.x / 16f + .001f, (blockUV.y + 1) / 16f - .001f));
+                            uv.Add(new float2((blockUV.x + 1) / 16f - .001f, (blockUV.y + 1) / 16f - .001f));
+                            uv.Add(new float2((blockUV.x + 1) / 16f - .001f, blockUV.y / 16f + .001f));
 
                             vCount += 4;
                             fCount++;
@@ -266,10 +275,11 @@ namespace UnityVoxelCommunityProject.Terrain
                             normals.Add(new float3(1, 0, 0));
                             normals.Add(new float3(1, 0, 0));
                             
-                            uv.Add(new float2(.001f, .001f));
-                            uv.Add(new float2(.001f, .0615f));
-                            uv.Add(new float2(.0615f, .0615f));
-                            uv.Add(new float2(.0615f, .001f));
+                            blockUV = atlasMap[(((int) current) * 3) + 1];
+                            uv.Add(new float2(blockUV.x / 16f + .001f, blockUV.y / 16f + .001f));
+                            uv.Add(new float2(blockUV.x / 16f + .001f, (blockUV.y + 1) / 16f - .001f));
+                            uv.Add(new float2((blockUV.x + 1) / 16f - .001f, (blockUV.y + 1) / 16f - .001f));
+                            uv.Add(new float2((blockUV.x + 1) / 16f - .001f, blockUV.y / 16f + .001f));
 
                             vCount += 4;
                             fCount++;
@@ -287,10 +297,11 @@ namespace UnityVoxelCommunityProject.Terrain
                             normals.Add(new float3(-1, 0, 0));
                             normals.Add(new float3(-1, 0, 0));
                             
-                            uv.Add(new float2(.001f, .001f));
-                            uv.Add(new float2(.001f, .0615f));
-                            uv.Add(new float2(.0615f, .0615f));
-                            uv.Add(new float2(.0615f, .001f));
+                            blockUV = atlasMap[(((int) current) * 3) + 1];
+                            uv.Add(new float2(blockUV.x / 16f + .001f, blockUV.y / 16f + .001f));
+                            uv.Add(new float2(blockUV.x / 16f + .001f, (blockUV.y + 1) / 16f - .001f));
+                            uv.Add(new float2((blockUV.x + 1) / 16f - .001f, (blockUV.y + 1) / 16f - .001f));
+                            uv.Add(new float2((blockUV.x + 1) / 16f - .001f, blockUV.y / 16f + .001f));
 
                             vCount += 4;
                             fCount++;
