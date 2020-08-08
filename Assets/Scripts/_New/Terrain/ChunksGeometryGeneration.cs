@@ -1,11 +1,9 @@
-﻿using System.Collections.Generic;
-using Unity.Burst;
+﻿using Unity.Burst;
 using Unity.Collections;
 using Unity.Jobs;
 using Unity.Mathematics;
 using UnityEngine;
 using UnityEngine.Rendering;
-using UnityVoxelCommunityProject.General;
 using UnityVoxelCommunityProject.Utility;
 
 namespace UnityVoxelCommunityProject.Terrain
@@ -14,8 +12,14 @@ namespace UnityVoxelCommunityProject.Terrain
     {
         public bool useJobSystem = true;
         
-        public void UpdateGeometry(NativeArray<Block> blocks, Mesh mesh,
-                                   NativeList<float3> vertices, NativeList<float3> normals, NativeList<int> triangles, NativeList<float2> uv)
+        public void UpdateGeometry(Mesh mesh,
+                                   NativeArray<Block> currentChunk,
+                                   NativeArray<Block> rightChunk, NativeArray<Block> leftChunk,
+                                   NativeArray<Block> frontChunk, NativeArray<Block> backChunk,
+                                   
+                                   NativeList<float3> vertices,
+                                   NativeList<float3> normals,
+                                   NativeList<int> triangles, NativeList<float2> uv)
         {
             var time = Time.realtimeSinceStartup;
             
@@ -27,7 +31,11 @@ namespace UnityVoxelCommunityProject.Terrain
             
             GenerateMeshJob generateMeshJob = new GenerateMeshJob()
             {
-                blocks = blocks,
+                currentChunk = currentChunk,
+                
+                leftChunk  = leftChunk, frontChunk = frontChunk,
+                rightChunk = rightChunk, backChunk = backChunk,
+                
                 atlasMap = ChunkManager.Instance.atlasMap,
                 
                 width  = SettingsHolder.Instance.proceduralGeneration.chunkWidth,
@@ -64,9 +72,9 @@ namespace UnityVoxelCommunityProject.Terrain
             outputMeshData.subMeshCount = 1;
             outputMeshData.SetSubMesh(0, submeshDescriptor,
                                       MeshUpdateFlags.DontNotifyMeshUsers |
-                                  MeshUpdateFlags.DontValidateIndices | 
-                                  MeshUpdateFlags.DontResetBoneBounds | 
-                                  MeshUpdateFlags.DontRecalculateBounds);
+                                      MeshUpdateFlags.DontValidateIndices |
+                                      MeshUpdateFlags.DontResetBoneBounds |
+                                      MeshUpdateFlags.DontRecalculateBounds);
             
             WriteToMeshJob writeToMeshJob = new WriteToMeshJob()
             {
@@ -90,8 +98,8 @@ namespace UnityVoxelCommunityProject.Terrain
 
             Mesh.ApplyAndDisposeWritableMeshData(outputMeshDataArray, mesh,
                                                  MeshUpdateFlags.DontNotifyMeshUsers |
-                                                 MeshUpdateFlags.DontValidateIndices | 
-                                                 MeshUpdateFlags.DontResetBoneBounds | 
+                                                 MeshUpdateFlags.DontValidateIndices |
+                                                 MeshUpdateFlags.DontResetBoneBounds |
                                                  MeshUpdateFlags.DontRecalculateBounds);
             
             //mesh.RecalculateNormals();
@@ -101,12 +109,11 @@ namespace UnityVoxelCommunityProject.Terrain
             //Debug.Log($"Geometry took: {Time.realtimeSinceStartup - time}");
         }
         
-        //TODO provide actual UV data instead of hardcoded dirt blocks.
         [BurstCompile(FloatPrecision.Low, FloatMode.Fast, CompileSynchronously = true)]
         private struct GenerateMeshJob : IJob
         {
-            //TODO feed slightly bigger array of data.
-            [ReadOnly] public NativeArray<Block> blocks;
+            [ReadOnly] public NativeArray<Block> currentChunk, 
+                                                 leftChunk, rightChunk, frontChunk, backChunk;
             
             [ReadOnly] public NativeArray<int2> atlasMap;
             public int width, height;
@@ -121,21 +128,18 @@ namespace UnityVoxelCommunityProject.Terrain
                 int vCount = 0;
                 
                 for (int y = 0; y < height; y++)
-                for (int z = 1; z < width + 1; z++)
-                for (int x = 1; x < width + 1; x++)
+                for (int z = 0; z < width; z++)
+                for (int x = 0; x < width; x++)
                 {
                     int index = 0;
-                    int dwidth = width + 2;
-                    int dwidthSqr = dwidth * dwidth;
+                    int widthSqr = width * width;
 
-                    
-                    
-                    index = x + z * dwidth + y * dwidthSqr;
-                    Block current = blocks[index];
+                    index = x + z * width + y * widthSqr;
+                    Block current = currentChunk[index];
                     Block top     = Block.Air;
                     Block bottom  = Block.Air;
-                    Block front   = Block.Air;
                     Block back    = Block.Air;
+                    Block front   = Block.Air;
                     Block left    = Block.Air;
                     Block right   = Block.Air;
                     
@@ -143,8 +147,8 @@ namespace UnityVoxelCommunityProject.Terrain
                     {
                         if (y < (height - 1))
                         {
-                            index = x + z * dwidth + (y + 1) * dwidthSqr;
-                            top   = blocks[index];
+                            index = x + z * width + (y + 1) * widthSqr;
+                            top   = currentChunk[index];
                         }
 
                         //There is no need to draw bottom of chunk - it's should be always invisible.
@@ -154,21 +158,53 @@ namespace UnityVoxelCommunityProject.Terrain
                         }
                         else
                         {
-                            index  = x + z * dwidth + (y - 1) * dwidthSqr;
-                            bottom = blocks[index];
+                            index  = x + z * width + (y - 1) * widthSqr;
+                            bottom = currentChunk[index];
                         }
 
-                        index = x + (z + 1) * dwidth + y * dwidthSqr;
-                        back  = blocks[index];
+                        if (z > 0)
+                        {
+                            index = x + (z - 1) * width + y * widthSqr;
+                            back = currentChunk[index];
+                        }
+                        else
+                        {
+                            index = x + (width - 1) * width + y * widthSqr;
+                            back  = backChunk[index];
+                        }
+                        
+                        if (z < (width - 1))
+                        {
+                            index = x + (z + 1) * width + y * widthSqr;
+                            front  = currentChunk[index];
+                        }
+                        else
+                        {
+                            index = x + (0) * width + y * widthSqr;
+                            front = frontChunk[index];
+                        }
+                        
+                        if (x > 0)
+                        {
+                            index = (x - 1) + z * width + y * widthSqr;
+                            left  = currentChunk[index];
+                        }
+                        else
+                        {
+                            index = (width - 1) + z * width + y * widthSqr;
+                            left = leftChunk[index];
+                        }
 
-                        index = x + (z - 1) * dwidth + y * dwidthSqr;
-                        front = blocks[index];
-
-                        index = (x + 1) + z * dwidth + y * dwidthSqr;
-                        right = blocks[index];
-
-                        index = (x - 1) + z * dwidth + y * dwidthSqr;
-                        left  = blocks[index];
+                        if (x < (width - 1))
+                        {
+                            index = (x + 1) + z * width + y * widthSqr;
+                            right = currentChunk[index];
+                        }
+                        else
+                        {
+                            index = (0) + z * width + y * widthSqr;
+                            right = rightChunk[index];
+                        }
                         
                         float3 blockPos = new float3(x - 1, y - 1, z - 1);
                         float2 blockUV;
@@ -219,7 +255,7 @@ namespace UnityVoxelCommunityProject.Terrain
                             fCount++;
                         }
 
-                        if (front == Block.Air)
+                        if (back == Block.Air)
                         {
                             vertices.Add(blockPos + new float3(0, 0, 0));
                             vertices.Add(blockPos + new float3(0, 1, 0));
@@ -241,7 +277,7 @@ namespace UnityVoxelCommunityProject.Terrain
                             fCount++;
                         }
 
-                        if (back == Block.Air)
+                        if (front == Block.Air)
                         {
                             vertices.Add(blockPos + new float3(1, 0, 1));
                             vertices.Add(blockPos + new float3(1, 1, 1));

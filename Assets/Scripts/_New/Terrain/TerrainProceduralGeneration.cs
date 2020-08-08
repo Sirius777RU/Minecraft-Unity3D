@@ -1,4 +1,5 @@
-﻿using Unity.Burst;
+﻿using System;
+using Unity.Burst;
 using Unity.Collections;
 using Unity.Jobs;
 using Unity.Mathematics;
@@ -35,7 +36,7 @@ namespace UnityVoxelCommunityProject.Terrain
                 height     = height,
                 areaSquare = areaSquare,
                 
-                blocks = blocks
+                currentChunk = blocks
             };
 
             if (useJobSystem)
@@ -63,7 +64,7 @@ namespace UnityVoxelCommunityProject.Terrain
             
             ChunkData chunkData = new ChunkData()
             {
-                blocks = new Block[ChunkManager.Instance.blocksPerChunk]
+                blocks = new NativeArray<Block>(ChunkManager.Instance.blocksPerChunk, Allocator.Persistent)
             };
             
             int width  = SettingsHolder.Instance.proceduralGeneration.chunkWidth;
@@ -85,7 +86,7 @@ namespace UnityVoxelCommunityProject.Terrain
                 height     = height,
                 areaSquare = areaSquare,
                     
-                blocks = new NativeArray<Block>(chunkData.blocks, Allocator.TempJob)
+                currentChunk = chunkData.blocks
             };
 
             if (useJobSystem)
@@ -101,12 +102,9 @@ namespace UnityVoxelCommunityProject.Terrain
                 }
             }
             
-
-            chunkGenerationJob.blocks.CopyTo(chunkData.blocks);
             chunkGenerationJob.Dispose();
             
             ChunkManager.Instance.worldData.chunks.Add(chunkPosition, chunkData);
-            
             return chunkData;
         }
 
@@ -131,7 +129,7 @@ namespace UnityVoxelCommunityProject.Terrain
         [BurstCompile(FloatPrecision.Low, FloatMode.Fast, CompileSynchronously = true)]
         private struct ChunkGenerationJob : IJobParallelFor
         {
-            public NativeArray<Block> blocks;
+            public NativeArray<Block> currentChunk;
             
             public float2 chunkPosition;
             public int width, height;
@@ -149,46 +147,35 @@ namespace UnityVoxelCommunityProject.Terrain
                 z = i / width;
                 x = i % width;
                 
-                //TODO proper generation, not just air/dirt.
-                float snoiseResult = (math.unlerp(-1, 1, noise.snoise(new float2(x + (chunkPosition.x * 16), z + (chunkPosition.y * 16)) * 0.025f)) * 10);  
+                float snoiseResult = (math.unlerp(-1, 1, noise.snoise(new float2(x + (chunkPosition.x * width), z + (chunkPosition.y * width)) * 0.025f)) * 10);  
                 
                 float heightMap = height * 0.5f + snoiseResult;
-
                 float stoneLevel = (height * 0.25f) + snoiseResult / 2;
                 
-                blocks[index] = Block.Air;
+                currentChunk[index] = Block.Air;
                 if (y <= stoneLevel)
                 {
-                    blocks[index] = Block.Stone;
+                    currentChunk[index] = Block.Stone;
                 }
                 else if (y <= heightMap)
                 {
-                    blocks[index] = Block.Dirt;
+                    currentChunk[index] = Block.Dirt;
 
                     if (y > heightMap - 1 && y > seaLevel - 2)
                     {
-                        blocks[index] = Block.Grass;
+                        currentChunk[index] = Block.Grass;
                     }
                 }
-
-                if (x == 7 && z == 7)
+                
+                if (y <= snoiseResult/5)
                 {
-                    blocks[index] = Block.Air;
+                    currentChunk[index] = Block.Core;
                 }
-
-                /*if (y <= 1)
-                {
-                    Debug.Log(index);
-                }*/
-                /*if (y <= 1 && index >= 1)
-                {
-                    blocks[index] = Block.Core;
-                }*/
             }
 
             public void Dispose()
             {
-                blocks.Dispose();
+                
             }
         }
     }

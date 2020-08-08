@@ -7,6 +7,7 @@ using ProtoBuf;
 using Unity.Mathematics;
 using Application = UnityEngine.Application;
 using Ionic.Zlib;
+using Unity.Collections;
 using UnityVoxelCommunityProject.Terrain;
 using CompressionLevel = Ionic.Zlib.CompressionLevel;
 
@@ -33,7 +34,7 @@ namespace UnityVoxelCommunityProject.Serialization
             if (ChunkManager.Instance.worldData == null)
             {
                 worldData        = new WorldData();
-                worldData.chunks = new Dictionary<ProtoInt2, ChunkData>();
+                worldData.chunks = new Dictionary<int2, ChunkData>();
                 
                 ChunkManager.Instance.worldData = worldData;
             }
@@ -54,39 +55,39 @@ namespace UnityVoxelCommunityProject.Serialization
 
         private void SaveWorld()
         {
-            WorldData worldData = ChunkManager.Instance.worldData;
-
-            if (worldData == null)
+            if (ChunkManager.Instance.worldData == null)
             {
                 throw new Exception("There is no world data to save for some reason. ");
             }
             
+            ProtoWorldData protoWorldData = ChunkManager.Instance.worldData;
+
             float time = Time.realtimeSinceStartup;
             if (useCompression)
             {
-                if (worldData.chunks.ContainsKey(new ProtoInt2(0, 0)))
+                if (protoWorldData.chunks.ContainsKey(new ProtoInt2(0, 0)))
                 {
-                    worldData.chunks[new ProtoInt2(0, 0)].blocks[0] = Block.Leaves;
-                    Debug.Log(worldData.chunks[new ProtoInt2(0, 0)].blocks[0]);
+                    protoWorldData.chunks[new ProtoInt2(0, 0)].blocks[0] = Block.Leaves;
+                    Debug.Log(protoWorldData.chunks[new ProtoInt2(0, 0)].blocks[0]);
                 }
 
                 var fileStream = File.Create(pathToSaveFiles + "Save.world");
                 DeflateStream zlibStream = new DeflateStream(fileStream, CompressionMode.Compress, CompressionLevel.Default);
-                Serializer.Serialize(zlibStream, worldData);
+                Serializer.Serialize(zlibStream, protoWorldData);
                 
                 zlibStream.Close();
                 fileStream.Close();
             }
             else
             {
-                if (worldData.chunks.ContainsKey(new ProtoInt2(0, 0)))
+                if (protoWorldData.chunks.ContainsKey(new ProtoInt2(0, 0)))
                 {
-                    worldData.chunks[new int2(0, 0)].blocks[0] = Block.Leaves;
-                    Debug.Log(worldData.chunks[new ProtoInt2(0, 0)].blocks[0]);
+                    protoWorldData.chunks[new int2(0, 0)].blocks[0] = Block.Leaves;
+                    Debug.Log(protoWorldData.chunks[new ProtoInt2(0, 0)].blocks[0]);
                 }
                 
                 var fileStream = File.Create(pathToSaveFiles + "Save.world");
-                Serializer.Serialize(fileStream, worldData);
+                Serializer.Serialize(fileStream, protoWorldData);
                 fileStream.Close();
             }
             
@@ -106,8 +107,9 @@ namespace UnityVoxelCommunityProject.Serialization
                 compressionStream.CopyTo(protoStream);
                 
                 protoStream.Seek(0, SeekOrigin.Begin);
-                var worldData = Serializer.Deserialize<WorldData>(protoStream);
-                Debug.Log(worldData.chunks[new int2(0, 0)].blocks[0]);
+                var worldData = Serializer.Deserialize<ProtoWorldData>(protoStream);
+
+                ChunkManager.Instance.worldData = worldData;
                 
                 protoStream.Close();
                 compressionStream.Close();
@@ -115,27 +117,91 @@ namespace UnityVoxelCommunityProject.Serialization
             else
             {
                 var fileStream = File.Open(pathToSaveFiles + "Save.world", FileMode.Open);
-                var worldData  = Serializer.Deserialize<WorldData>(fileStream);
+                var worldData  = Serializer.Deserialize<ProtoWorldData>(fileStream);
                 ChunkManager.Instance.worldData = worldData;
                 fileStream.Close();
-                
-                Debug.Log(worldData.chunks[new ProtoInt2(0, 0)].blocks[0]);
             }
             
             Debug.Log($"Loading took {Time.realtimeSinceStartup - time}s");
         }
+
     }
 
-    [ProtoContract]
     public class WorldData
     {
+        public Dictionary<int2, ChunkData> chunks;
+    }
+
+    public class ChunkData
+    {
+        public NativeArray<Block> blocks;
+    }
+    
+    [ProtoContract]
+    public class ProtoWorldData
+    {
         //TODO Think of file structure.
-        [ProtoMember(1)] public Dictionary<ProtoInt2, ChunkData> chunks;
+        [ProtoMember(1)] public Dictionary<ProtoInt2, ProtoChunkData> chunks;
+        
+        public static implicit operator WorldData(ProtoWorldData p)
+        {
+            var result = new WorldData()
+            {
+                chunks = new Dictionary<int2, ChunkData>()
+            };
+
+            var keys = p.chunks.Keys.ToArray();
+            var values = p.chunks.Values.ToArray();
+            
+            for (int i = 0; i < p.chunks.Count; i++)
+            {
+                result.chunks.Add(keys[i], values[i]);
+            }
+
+            return result;
+        }
+
+        public static implicit operator ProtoWorldData(WorldData p)
+        {
+            var result = new ProtoWorldData()
+            {
+                chunks = new Dictionary<ProtoInt2, ProtoChunkData>()
+            };
+
+            var keys   = p.chunks.Keys.ToArray();
+            var values = p.chunks.Values.ToArray();
+            
+            for (int i = 0; i < p.chunks.Count; i++)
+            {
+                result.chunks.Add(keys[i], values[i]);
+            }
+
+            return result;
+        }
     }
 
     [ProtoContract]
-    public class ChunkData
+    public class ProtoChunkData
     {
         [ProtoMember(1)] public Block[] blocks;
+
+        public static implicit operator ChunkData(ProtoChunkData p)
+        {
+            return new ChunkData()
+            {
+                blocks = new NativeArray<Block>(p.blocks, Allocator.Persistent)
+            };
+        }
+
+        public static implicit operator ProtoChunkData(ChunkData p)
+        {
+            var result = new ProtoChunkData()
+            {
+                blocks = new Block[p.blocks.Length]
+            };
+            p.blocks.CopyTo(result.blocks);
+
+            return result;
+        }
     }
 }

@@ -5,6 +5,7 @@ using UnityEngine;
 using Unity.Mathematics;
 using UnityVoxelCommunityProject.Serialization;
 using UnityVoxelCommunityProject.Utility;
+using Random = UnityEngine.Random;
 
 namespace UnityVoxelCommunityProject.Terrain
 {
@@ -34,8 +35,7 @@ namespace UnityVoxelCommunityProject.Terrain
             height   = settings.chunkHeight;
             widthSqr = width * width;
             
-            //Block count here gets extra 1 blocks for each chunk side so we could check neighboring to current chunk blocks.
-            blocksPerChunk = (width + 2) * (width + 2) * 
+            blocksPerChunk = (width) * (width) * 
                              height;
 
             
@@ -83,12 +83,33 @@ namespace UnityVoxelCommunityProject.Terrain
             for (int z = from.z; z < to.z; z++)
             for (int x = from.x; x < to.x; x++)
             {
-                blocks[i] = GetBlockAtPosition(new int3(x, y, z));
+                blocks[i] = Random.Range(0, 20) < 2 ? Block.Core : Block.Air; 
+                //blocks[i] = GetBlockAtPosition(new int3(x, y, z));
                 i++;
             }
         }
 
-        private void Local()
+        private void Update()
+        {
+            /*if (Input.GetKeyDown(KeyCode.Alpha1))
+            {
+                Local();
+            }*/
+            
+            if(Input.GetKeyDown(KeyCode.Alpha5))
+            {
+                float time = Time.realtimeSinceStartup;
+                
+                for (int i = 0; i < usedChunks.Count; i++)
+                {
+                    usedChunks[i].Local();
+                }
+
+                Debug.Log($"Chunks rebuild took: {Time.realtimeSinceStartup - time}s");
+            }
+        }
+
+        public void Local()
         {
             float time = Time.realtimeSinceStartup;
             int renderDistance = SettingsHolder.Instance.displayOptions.chunkRenderDistance;

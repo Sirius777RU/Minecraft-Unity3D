@@ -91,6 +91,19 @@ MonoBehaviour:
         x: -1
         y: -1
     durability: 5
+  - name: Water
+    blockType: 6
+    atlasMapping:
+      defaultTexture:
+        x: 3
+        y: 0
+      sideTexture:
+        x: -1
+        y: -1
+      bottomTexture:
+        x: -1
+        y: -1
+    durability: Infinity
   - name: Sand
     blockType: 7
     atlasMapping:

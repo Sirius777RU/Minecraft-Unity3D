@@ -12,8 +12,6 @@ namespace UnityVoxelCommunityProject.Terrain
     [RequireComponent(typeof(MeshRenderer))]
     public class Chunk : MonoBehaviour
     {
-        private NativeArray<Block> blocks;
-
         private MeshFilter meshFilter;
         private MeshRenderer meshRenderer;
         private MeshCollider meshCollider;
@@ -27,24 +25,25 @@ namespace UnityVoxelCommunityProject.Terrain
         private int2 chunkPosition;
         private int3 volumeStart, volumeEnd;
         private int width, height, widthSqr;
+
+        [ReadOnly] private NativeArray<Block> currentChunk, rightChunk, leftChunk, backChunk, frontChunk;
+        
     
         public void Initialize(int blocksCount)
         {
-            blocks    = new NativeArray<Block>(blocksCount, Allocator.Persistent);
-            
             vertices  = new NativeList<float3>(15000, Allocator.Persistent);
             normals   = new NativeList<float3>(15000, Allocator.Persistent);
             triangles = new NativeList<int>(25000, Allocator.Persistent); 
             uv        = new NativeList<float2>(15000, Allocator.Persistent);
 
             tf = GetComponent<Transform>();
-            meshFilter = GetComponent<MeshFilter>();
+            meshFilter   = GetComponent<MeshFilter>();
             meshRenderer = GetComponent<MeshRenderer>();
             meshCollider = GetComponent<MeshCollider>();
             
             meshFilter.mesh = new Mesh();
-            meshCollider.sharedMesh = meshFilter.mesh;
             meshFilter.mesh.MarkDynamic();
+            meshCollider.sharedMesh = meshFilter.mesh;
             
             width  = SettingsHolder.Instance.proceduralGeneration.chunkWidth;
             height = SettingsHolder.Instance.proceduralGeneration.chunkHeight;
@@ -53,25 +52,22 @@ namespace UnityVoxelCommunityProject.Terrain
             meshFilter.mesh.bounds = new Bounds(new Vector3(width/2, height/2, width/2), new Vector3(width, height, width));
         }
 
-        private void Update()
-        {
-            if (Input.GetKeyDown(KeyCode.Alpha1))
-            {
-                Local();
-            }
-        }
-
         public void Local()
         {
             RecalculatePosition();
-            
+         
+            //Generate chunk with neighbors.
             TerrainProceduralGeneration.Instance.GenerateChunk(chunkPosition, withNeighbors: true);
             
-            ChunkManager.Instance.GetBlocksVolume(volumeStart, volumeEnd, blocks);
+            //Grab the result.
+            GrabChunksData();
             
-            ChunksGeometryGeneration.Instance.UpdateGeometry(blocks, meshFilter.mesh,
-                                                             vertices, normals, triangles, uv);
-
+            //And use all data it to display mesh;
+            ChunksGeometryGeneration.Instance.UpdateGeometry(meshFilter.mesh, 
+                                                             currentChunk, rightChunk, leftChunk, frontChunk, backChunk, 
+                                                             vertices, normals, triangles, uv); 
+            
+            //Also cause physics to update.
             meshCollider.sharedMesh = meshFilter.mesh;
         }
 
@@ -82,18 +78,25 @@ namespace UnityVoxelCommunityProject.Terrain
 
             chunkPosition = new int2(x, z);
             
-            int2 from = ((chunkPosition * 16) + new int2(-1, -1));
-            int2 to   = ((chunkPosition * 16) + new int2(17, 17));
+            int2 from = (chunkPosition * width);
+            int2 to   = (chunkPosition * width) + new int2(width, width);
             
             volumeStart = new int3(from.x, 0, from.y);
             volumeEnd = new int3(to.x, height, to.y);
-            //Debug.Log(chunkPosition);
+        }
+
+        private void GrabChunksData()
+        {
+            currentChunk = ChunkManager.Instance.worldData.chunks[chunkPosition].blocks;
+            rightChunk   = ChunkManager.Instance.worldData.chunks[chunkPosition + new int2(1, 0)].blocks;
+            leftChunk    = ChunkManager.Instance.worldData.chunks[chunkPosition + new int2(-1, 0)].blocks;
+            frontChunk   = ChunkManager.Instance.worldData.chunks[chunkPosition + new int2(0, 1)].blocks;
+            backChunk    = ChunkManager.Instance.worldData.chunks[chunkPosition + new int2(0, -1)].blocks;
+            
         }
 
         public void Dispose()
         {
-            blocks.Dispose();
-
             vertices.Dispose();
             normals.Dispose();
             triangles.Dispose();

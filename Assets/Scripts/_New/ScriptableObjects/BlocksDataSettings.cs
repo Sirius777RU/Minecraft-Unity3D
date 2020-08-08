@@ -4,6 +4,7 @@ using Unity.Collections;
 using Unity.Mathematics;
 using UnityEngine;
 using UnityVoxelCommunityProject.Terrain;
+using Block = UnityVoxelCommunityProject.Terrain.Block;
 
 namespace UnityVoxelCommunityProject.General
 {
@@ -29,6 +30,7 @@ namespace UnityVoxelCommunityProject.General
 
         public void GrabUVMappingArray(out NativeArray<int2> data, Allocator allocator)
         {
+            
             data = new NativeArray<int2>(blocks.Length * 3, allocator);
             
             for (int i = 0; i < blocks.Length; i++)
