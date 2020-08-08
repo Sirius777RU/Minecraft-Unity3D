@@ -22,7 +22,7 @@ namespace UnityVoxelCommunityProject.Terrain
         private NativeList<int>    triangles;
         private NativeList<float2> uv;
 
-        private int2 chunkPosition;
+        [HideInInspector] public int2 chunkPosition;
         private int3 volumeStart, volumeEnd;
         private int width, height, widthSqr;
 

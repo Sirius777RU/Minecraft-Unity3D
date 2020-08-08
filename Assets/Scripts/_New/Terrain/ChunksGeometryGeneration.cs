@@ -27,6 +27,7 @@ namespace UnityVoxelCommunityProject.Terrain
             
             vertices.Clear();
             triangles.Clear();
+            normals.Clear();
             uv.Clear();
             
             GenerateMeshJob generateMeshJob = new GenerateMeshJob()
@@ -71,7 +72,6 @@ namespace UnityVoxelCommunityProject.Terrain
             
             outputMeshData.subMeshCount = 1;
             outputMeshData.SetSubMesh(0, submeshDescriptor,
-                                      MeshUpdateFlags.DontNotifyMeshUsers |
                                       MeshUpdateFlags.DontValidateIndices |
                                       MeshUpdateFlags.DontResetBoneBounds |
                                       MeshUpdateFlags.DontRecalculateBounds);
@@ -97,7 +97,6 @@ namespace UnityVoxelCommunityProject.Terrain
             }
 
             Mesh.ApplyAndDisposeWritableMeshData(outputMeshDataArray, mesh,
-                                                 MeshUpdateFlags.DontNotifyMeshUsers |
                                                  MeshUpdateFlags.DontValidateIndices |
                                                  MeshUpdateFlags.DontResetBoneBounds |
                                                  MeshUpdateFlags.DontRecalculateBounds);

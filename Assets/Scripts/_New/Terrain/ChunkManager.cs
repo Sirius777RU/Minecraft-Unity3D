@@ -18,6 +18,8 @@ namespace UnityVoxelCommunityProject.Terrain
         private List<Chunk> usedChunks = new List<Chunk>();
         private List<Chunk> chunksPool = new List<Chunk>();
 
+        private Dictionary<int2, Chunk> usedChunksMap = new Dictionary<int2, Chunk>();
+
         private Transform tf;
         [HideInInspector] public int blocksPerChunk;
         private CurrentGenerationSettings settings;
@@ -65,15 +67,11 @@ namespace UnityVoxelCommunityProject.Terrain
         public Block GetBlockAtPosition(int2 chunkPosition, int3 blockPosition)
         {
             int i = blockPosition.x + blockPosition.z * width + blockPosition.y * widthSqr;
-            if (i < 0)
-            {
-                return Block.Core;
-            }
             return worldData.chunks[chunkPosition].blocks[i];
         }
+        
 
         //Get blocks in certain volume.
-        //TODO just provide required chunks to mesh generation instead of this.
         public void GetBlocksVolume(int3 from, int3 to, NativeArray<Block> blocks)
         {
             int i = 0;
@@ -89,6 +87,52 @@ namespace UnityVoxelCommunityProject.Terrain
             }
         }
 
+        public void SetBlockAtPosition(int3 blockPosition, Block block)
+        {
+            int2 chunkPosition; 
+            
+            chunkPosition.x = Mathf.FloorToInt((0f + blockPosition.x) / width);
+            chunkPosition.y = Mathf.FloorToInt((0f + blockPosition.z) / width);
+
+            blockPosition.x = blockPosition.x >= 0 ? ((blockPosition.x % width + width) % width) : ((blockPosition.x % width + width) % width);
+            blockPosition.z = blockPosition.z >= 0 ? ((blockPosition.z % width + width) % width) : ((blockPosition.z % width + width) % width);
+            
+            int i = blockPosition.x + blockPosition.z * width + blockPosition.y * widthSqr;
+            worldData.chunks[chunkPosition].blocks[i] = block;
+
+            if (usedChunksMap.ContainsKey(chunkPosition))
+            {
+                usedChunksMap[chunkPosition].Local();
+
+                int2 setCheckPosition = int2.zero;
+                if (blockPosition.x == 0)
+                {
+                    setCheckPosition = chunkPosition + new int2(-1, 0);
+                    if (usedChunksMap.ContainsKey(setCheckPosition))
+                        usedChunksMap[setCheckPosition].Local();
+                }
+                else if(blockPosition.x == width-1)
+                {
+                    setCheckPosition = chunkPosition + new int2(1, 0);
+                    if (usedChunksMap.ContainsKey(setCheckPosition))
+                        usedChunksMap[setCheckPosition].Local();
+                }
+
+                if (blockPosition.z == 0)
+                {
+                    setCheckPosition = chunkPosition + new int2(0, -1);
+                    if (usedChunksMap.ContainsKey(setCheckPosition))
+                        usedChunksMap[setCheckPosition].Local();
+                }
+                else if(blockPosition.z == width-1)
+                {
+                    setCheckPosition = chunkPosition + new int2(0, 1);
+                    if (usedChunksMap.ContainsKey(setCheckPosition))
+                        usedChunksMap[setCheckPosition].Local();
+                }
+            }
+        }
+            
         private void Update()
         {
             /*if (Input.GetKeyDown(KeyCode.Alpha1))
@@ -133,6 +177,8 @@ namespace UnityVoxelCommunityProject.Terrain
 
             created.Initialize(blocksPerChunk);
             created.Local();
+            
+            usedChunksMap.Add(created.chunkPosition, created);
         }
         
         private void OnApplicationQuit()

@@ -18,7 +18,7 @@ namespace UnityVoxelCommunityProject.General.Controls
         [Space(10)]
         public bool2 invertXY = new bool2(false, false);
         
-        private Transform tf;
+        [HideInInspector] public Transform tf;
         private float desiredX, desiredY;
         private float currentX, currentY;
         
@@ -30,8 +30,8 @@ namespace UnityVoxelCommunityProject.General.Controls
         private void Update()
         {
             float dt = Time.unscaledDeltaTime;
-            float mouseX = (Input.GetAxis("Mouse X") * mouseSensitivity.x) * dt;
-            float mouseY = (Input.GetAxis("Mouse Y") * mouseSensitivity.y) * dt;
+            float mouseX = (Input.GetAxis("Mouse X") * mouseSensitivity.x);
+            float mouseY = (Input.GetAxis("Mouse Y") * mouseSensitivity.y);
 
             desiredX = desiredX + (invertXY.x ? -mouseX : mouseX);
             desiredY = desiredY - (invertXY.x ? -mouseY : mouseY);
