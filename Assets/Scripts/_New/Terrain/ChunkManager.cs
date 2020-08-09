@@ -142,15 +142,20 @@ namespace UnityVoxelCommunityProject.Terrain
             
             if(Input.GetKeyDown(KeyCode.Alpha5))
             {
-                float time = Time.realtimeSinceStartup;
-                
-                for (int i = 0; i < usedChunks.Count; i++)
-                {
-                    usedChunks[i].Local();
-                }
-
-                Debug.Log($"Chunks rebuild took: {Time.realtimeSinceStartup - time}s");
+                UpdateChunks();
             }
+        }
+
+        public void UpdateChunks()
+        {
+            float time = Time.realtimeSinceStartup;
+                
+            for (int i = 0; i < usedChunks.Count; i++)
+            {
+                usedChunks[i].Local();
+            }
+
+            Debug.Log($"Chunks rebuild took: {Time.realtimeSinceStartup - time}s");
         }
 
         public void Local()

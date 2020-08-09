@@ -32,7 +32,7 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     m_Floats:
-    - _StarsFade: 0.0015696207
+    - _StarsFade: 0.008691415
     - _StarsGlobalIntensity: 5
     - _StarsSmoothstepMax: 2.82
     - _StarsSmoothstepMin: 0.63
@@ -40,7 +40,7 @@ Material:
     - __dirty: 0
     m_Colors:
     - _BackgroundColor: {r: 0, g: 0, b: 0, a: 0}
-    - _SkyRotation: {r: 1, g: 0.44, b: 0, a: 0}
+    - _SkyRotation: {r: 1.1, g: 0.5, b: 0, a: 0}
     - _StarColor: {r: 1, g: 1, b: 1, a: 1}
     - _StarsLayersIntensity: {r: 1, g: 1, b: 1, a: 0}
     - _StarsSmoothStepMinMax: {r: 0.73, g: 0.94, b: 0, a: 0}

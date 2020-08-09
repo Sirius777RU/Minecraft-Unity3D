@@ -50,6 +50,7 @@ namespace UnityVoxelCommunityProject.Serialization
             if (Input.GetKeyDown(KeyCode.F9))
             {
                 LoadWorld();
+                ChunkManager.Instance.UpdateChunks();
             }
         }
 

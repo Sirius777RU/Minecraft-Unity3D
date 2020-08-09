@@ -64,13 +64,13 @@ MonoBehaviour:
     value: {x: 0.5, y: 0.5}
   intensity:
     overrideState: 1
-    value: 0.418
+    value: 0.4
   smoothness:
     overrideState: 1
-    value: 0.2
+    value: 1
   roundness:
     overrideState: 1
-    value: 1
+    value: 0.75
   rounded:
     overrideState: 1
     value: 0
@@ -170,6 +170,7 @@ MonoBehaviour:
   - {fileID: 4767518787645075973}
   - {fileID: -3962764902861470529}
   - {fileID: -2331801483030761894}
+  - {fileID: 363187790242114199}
 --- !u!114 &292591190478435898
 MonoBehaviour:
   m_ObjectHideFlags: 3
@@ -198,6 +199,76 @@ MonoBehaviour:
   kernelSize:
     overrideState: 1
     value: 1
+--- !u!114 &363187790242114199
+MonoBehaviour:
+  m_ObjectHideFlags: 3
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5369720dfee3bfd4ea30a9e16a96bcd1, type: 3}
+  m_Name: StochasticReflections
+  m_EditorClassIdentifier: 
+  active: 0
+  enabled:
+    overrideState: 1
+    value: 1
+  intensity:
+    overrideState: 1
+    value: 1
+  raycastDownsample:
+    overrideState: 1
+    value: 1
+  resolveDownsample:
+    overrideState: 1
+    value: 1
+  rayDistance:
+    overrideState: 1
+    value: 30
+  thickness:
+    overrideState: 1
+    value: 0.2
+  screenFadeSize:
+    overrideState: 1
+    value: 0.25
+  useFresnel:
+    overrideState: 1
+    value: 1
+  BRDFBias:
+    overrideState: 1
+    value: 0.7
+  useMipMap:
+    overrideState: 1
+    value: 1
+  normalization:
+    overrideState: 1
+    value: 0
+  blurring:
+    overrideState: 1
+    value: 1
+  highQualityBlur:
+    overrideState: 1
+    value: 0
+  useTemporal:
+    overrideState: 1
+    value: 1
+  multipleBounces:
+    overrideState: 1
+    value: 0
+  temporalResponseMin:
+    overrideState: 1
+    value: 0.85
+  temporalResponseMax:
+    overrideState: 1
+    value: 1
+  smoothnessRange:
+    overrideState: 1
+    value: 1
+  debugPass:
+    overrideState: 1
+    value: 0
 --- !u!114 &4767518787645075973
 MonoBehaviour:
   m_ObjectHideFlags: 3
@@ -312,16 +383,16 @@ MonoBehaviour:
     value: 0
   saturation:
     overrideState: 1
-    value: 0
+    value: 5
   brightness:
     overrideState: 0
     value: 0
   postExposure:
     overrideState: 1
-    value: 0.5
+    value: 0.75
   contrast:
     overrideState: 1
-    value: 0
+    value: -5
   mixerRedOutRedIn:
     overrideState: 0
     value: 100

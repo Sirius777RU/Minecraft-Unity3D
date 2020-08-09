@@ -323,7 +323,7 @@
 
                 // Distort the world space uv coordinates by the normal map.
                  
-                float2 foamUV;
+                float2 foamUV = float2(0, 0);
                 float2 noise = (_FoamNoiseScale * normalTS.xz);
                 foamUV.x = lerp(0, 1, i.worldPosition.x / _FoamScale) + noise.x;
                 foamUV.y = lerp(0, 1, i.worldPosition.z / _FoamScale) + noise.y;

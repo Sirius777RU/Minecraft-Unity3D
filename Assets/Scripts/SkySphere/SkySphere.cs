@@ -7,6 +7,7 @@ using UnityEngine;
 [ExecuteInEditMode]
 public class SkySphere : MonoBehaviour
 {
+    public bool noAmbientLight = false;
 
     [Range(0, 1)] public float currentTime = 0f;
 
@@ -67,7 +68,14 @@ public class SkySphere : MonoBehaviour
         water.SetFloat("_FoamContribution", foamContribution.Evaluate(currentTime));
 
 
-        RenderSettings.ambientSkyColor = environmentColor.Evaluate(currentTime);
+        if (noAmbientLight)
+        {
+            RenderSettings.ambientSkyColor = Color.black;
+        }
+        else
+        {
+            RenderSettings.ambientSkyColor = environmentColor.Evaluate(currentTime);
+        }
 
         RenderSettings.fogDensity = UnderwaterEffect.underwater ?  underwaterFogDistance : fogFade.Evaluate(currentTime);
         RenderSettings.fogColor = UnderwaterEffect.underwater ? underwaterFogColor : regularFogColor;

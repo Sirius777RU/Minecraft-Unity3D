@@ -8,6 +8,8 @@ namespace UnityVoxelCommunityProject.General.Controls
 {
     public class BlockInteraction : Singleton<BlockInteraction>
     {
+        public Block currentSetBlock = Block.Dirt ;
+        
         public LayerMask collideWith;
         public float maxDistance = 8;
         public float deepenRaycastPoint = 0.2f;
@@ -99,7 +101,7 @@ namespace UnityVoxelCommunityProject.General.Controls
                         if(currentBlock == Block.Air || currentBlock == Block.Water)
                         {
                             currentCooldownTime = 0;
-                            ChunkManager.Instance.SetBlockAtPosition(blockPosition, Block.Dirt);
+                            ChunkManager.Instance.SetBlockAtPosition(blockPosition, currentSetBlock);
                         }
                     }
                 }
