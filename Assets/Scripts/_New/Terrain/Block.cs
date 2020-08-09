@@ -15,7 +15,8 @@ namespace UnityVoxelCommunityProject.Terrain
         Trunk, 
         Leaves, 
         Water, 
-        Sand, 
+        Sand,
+        Luminore,
         Core 
     }
 }

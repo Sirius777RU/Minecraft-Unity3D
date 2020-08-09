@@ -209,7 +209,7 @@ namespace UnityVoxelCommunityProject.Terrain
                         float2 blockUV;
                         int fCount = 0;
                         
-                        if (top == Block.Air)
+                        if (!Opaque(current, top))
                         {
                             vertices.Add(blockPos + new float3(0, 1, 0));
                             vertices.Add(blockPos + new float3(0, 1, 1));
@@ -231,7 +231,7 @@ namespace UnityVoxelCommunityProject.Terrain
                             fCount++;
                         }
 
-                        if (bottom == Block.Air)
+                        if (!Opaque(current, bottom))
                         {
                             //Bottom
                             vertices.Add(blockPos + new float3(0, 0, 0));
@@ -254,7 +254,7 @@ namespace UnityVoxelCommunityProject.Terrain
                             fCount++;
                         }
 
-                        if (back == Block.Air)
+                        if (!Opaque(current, back))
                         {
                             vertices.Add(blockPos + new float3(0, 0, 0));
                             vertices.Add(blockPos + new float3(0, 1, 0));
@@ -276,7 +276,7 @@ namespace UnityVoxelCommunityProject.Terrain
                             fCount++;
                         }
 
-                        if (front == Block.Air)
+                        if (!Opaque(current, front))
                         {
                             vertices.Add(blockPos + new float3(1, 0, 1));
                             vertices.Add(blockPos + new float3(1, 1, 1));
@@ -298,7 +298,7 @@ namespace UnityVoxelCommunityProject.Terrain
                             fCount++;
                         }
                         
-                        if (right == Block.Air)
+                        if (!Opaque(current, right))
                         {
                             vertices.Add(blockPos + new float3(1, 0, 0));
                             vertices.Add(blockPos + new float3(1, 1, 0));
@@ -320,7 +320,7 @@ namespace UnityVoxelCommunityProject.Terrain
                             fCount++;
                         }
                         
-                        if (left == Block.Air)
+                        if (!Opaque(current, left))
                         {
                             vertices.Add(blockPos + new float3(0, 0, 1));
                             vertices.Add(blockPos + new float3(0, 1, 1));
@@ -356,7 +356,20 @@ namespace UnityVoxelCommunityProject.Terrain
                     }
                 }
             }
-            
+
+            private bool Opaque(Block current, Block target)
+            {
+                if (target == Block.Air)
+                    return false;
+                
+                if (target == Block.Water)
+                    return false;
+                
+                if (target == Block.Leaves && current != Block.Leaves)
+                    return false;
+
+                return true;
+            }
         }
         
         [BurstCompile(FloatPrecision.Low, FloatMode.Fast, CompileSynchronously = true)]

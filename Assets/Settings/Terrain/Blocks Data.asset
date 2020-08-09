@@ -117,8 +117,21 @@ MonoBehaviour:
         x: -1
         y: -1
     durability: 5
-  - name: Core
+  - name: Luminore
     blockType: 8
+    atlasMapping:
+      defaultTexture:
+        x: 4
+        y: 0
+      sideTexture:
+        x: -1
+        y: -1
+      bottomTexture:
+        x: -1
+        y: -1
+    durability: 60
+  - name: Core
+    blockType: 9
     atlasMapping:
       defaultTexture:
         x: 3

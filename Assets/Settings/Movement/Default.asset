@@ -48,8 +48,8 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 256
   rayLength: 0.2
-  raySphereRadius: 0.3
-  smoothInput: 75
+  raySphereRadius: 0.2
+  smoothInput: 70
   smoothVelocity: 5
   smoothFinalDirection: 20
   smoothHeadBob: 5
