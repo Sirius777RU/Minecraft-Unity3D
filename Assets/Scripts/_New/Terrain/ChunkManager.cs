@@ -1,8 +1,10 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using Unity.Collections;
 using UnityEngine;
 using Unity.Mathematics;
+using UnityVoxelCommunityProject.General;
 using UnityVoxelCommunityProject.Serialization;
 using UnityVoxelCommunityProject.Utility;
 using Random = UnityEngine.Random;
@@ -41,17 +43,12 @@ namespace UnityVoxelCommunityProject.Terrain
             blocksPerChunk = (width) * (width) * 
                              height;
 
-            
-            Local();
+            SimpleCreate(new Vector3(0, 0, 0));
+            StartCoroutine(WaitTillNextFrameToDoLocal());
         }
 
         private void Update()
         {
-            /*if (Input.GetKeyDown(KeyCode.Alpha1))
-            {
-                Local();
-            }*/
-            
             if(Input.GetKeyDown(KeyCode.Alpha5))
             {
                 UpdateChunks();
@@ -70,6 +67,13 @@ namespace UnityVoxelCommunityProject.Terrain
             Debug.Log($"Chunks rebuild took: {Time.realtimeSinceStartup - time}s");
         }
 
+        private IEnumerator WaitTillNextFrameToDoLocal()
+        {
+            yield return WaitFor.Frames(1);
+
+            Local();
+        }
+
         public void Local()
         {
             float time = Time.realtimeSinceStartup;
@@ -78,6 +82,8 @@ namespace UnityVoxelCommunityProject.Terrain
             for (int z = 0; z < renderDistance; z++)
             for (int x = 0; x < renderDistance; x++)
             {
+                if(x + z == 0) continue;
+                
                 SimpleCreate(new Vector3(x * width, 0, z * width));
             }
             

@@ -11,6 +11,6 @@
     "CpuMinTargetX64": 0,
     "CpuMaxTargetX64": 0,
     "CpuTargetsX32": 6,
-    "CpuTargetsX64": 72
+    "CpuTargetsX64": 88
   }
 }

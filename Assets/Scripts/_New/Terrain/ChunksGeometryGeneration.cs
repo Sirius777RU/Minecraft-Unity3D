@@ -111,7 +111,7 @@ namespace UnityVoxelCommunityProject.Terrain
             //Debug.Log($"Geometry took: {Time.realtimeSinceStartup - time}");
         }
         
-        [BurstCompile(FloatPrecision.Low, FloatMode.Fast)]
+        [BurstCompile(FloatPrecision.Low, FloatMode.Fast, CompileSynchronously = true)]
         private struct GenerateMeshJob : IJob
         {
             [ReadOnly] public NativeArray<Block> currentChunk, 
@@ -376,7 +376,7 @@ namespace UnityVoxelCommunityProject.Terrain
             }
         }
         
-        [BurstCompile(FloatPrecision.Low, FloatMode.Fast)]
+        [BurstCompile(FloatPrecision.Low, FloatMode.Fast, CompileSynchronously = true)]
         private struct WriteToMeshJob : IJob
         {
             [ReadOnly] public NativeList<float3> vertices;
