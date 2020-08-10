@@ -9,12 +9,14 @@ public class ChangeCreatedBlock : MonoBehaviour
 {
     public Block startWith = Block.Dirt;
 
-    private uint value = 0;
+    private int value = 0;
     private int maxValue = 0;
+
+    private bool moveUp = false;
     
     private void Start()
     {
-        value = (uint) startWith;
+        value = (int) startWith;
 
         maxValue = Enum.GetNames(typeof(Block)).Length;
         Local();
@@ -25,12 +27,14 @@ public class ChangeCreatedBlock : MonoBehaviour
         var scroll = Input.GetAxis("Mouse ScrollWheel") * 10;
         if (scroll > 0.1f)
         {
+            moveUp = true;
             value++;
             Local();
         }
 
         if (scroll < -0.1f)
         {
+            moveUp = false;
             value--;
             Local();
         }
@@ -43,16 +47,20 @@ public class ChangeCreatedBlock : MonoBehaviour
         for (int i = 0; i < maxValue*2; i++)
         {
             if (value < 0)
-                value = (uint) maxValue;
+                value = maxValue-1;
 
             if (value >= maxValue)
                 value = 0;
             
-            createdBlock = (Block) value;
+            createdBlock = (Block) (uint) value;
 
             if (createdBlock == Block.Air || createdBlock == Block.Core || createdBlock == Block.Water)
             {
-                value++;
+                if (moveUp)
+                    value++;
+                else
+                    value--;
+                
                 continue;
             }
             

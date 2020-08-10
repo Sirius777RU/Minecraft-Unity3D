@@ -11,6 +11,7 @@ namespace UnityVoxelCommunityProject.Terrain
 {
     public class ChunkManager : Singleton<ChunkManager>
     {
+        public bool justSingleTestChunk = false;
         public GameObject chunkPrefab;
 
         public WorldData worldData;
@@ -44,6 +45,71 @@ namespace UnityVoxelCommunityProject.Terrain
             Local();
         }
 
+        private void Update()
+        {
+            /*if (Input.GetKeyDown(KeyCode.Alpha1))
+            {
+                Local();
+            }*/
+            
+            if(Input.GetKeyDown(KeyCode.Alpha5))
+            {
+                UpdateChunks();
+            }
+        }
+
+        public void UpdateChunks()
+        {
+            float time = Time.realtimeSinceStartup;
+                
+            for (int i = 0; i < usedChunks.Count; i++)
+            {
+                usedChunks[i].Local();
+            }
+
+            Debug.Log($"Chunks rebuild took: {Time.realtimeSinceStartup - time}s");
+        }
+
+        public void Local()
+        {
+            float time = Time.realtimeSinceStartup;
+            int renderDistance = justSingleTestChunk ? 1 : SettingsHolder.Instance.displayOptions.chunkRenderDistance;
+            
+            for (int z = 0; z < renderDistance; z++)
+            for (int x = 0; x < renderDistance; x++)
+            {
+                SimpleCreate(new Vector3(x * width, 0, z * width));
+            }
+            
+            Debug.Log($"Full procedural terrain data and mesh generation took around {Time.realtimeSinceStartup - time}s. Generated in memory: {worldData.chunks.Count} chunks. Displaying right now: {usedChunks.Count} chunks. ");
+            
+        }
+
+        private void SimpleCreate(Vector3 position)
+        {
+            var created = Instantiate(chunkPrefab, tf).GetComponent<Chunk>();
+            created.name = $"Chunk [x{position.x} z{position.z}]";
+            created.transform.position = position;
+            usedChunks.Add(created);
+
+            created.Initialize(blocksPerChunk);
+            created.Local();
+            
+            usedChunksMap.Add(created.chunkPosition, created);
+        }
+        
+        private void OnApplicationQuit()
+        {
+            for (int i = 0; i < usedChunks.Count; i++)
+                usedChunks[i].Dispose();
+
+            for (int i = 0; i < chunksPool.Count; i++)
+                chunksPool[i].Dispose();
+
+            atlasMap.Dispose();
+        }
+
+        #region UsefulButNotCheapFunctions
         //Use global block position to get block type.
         public Block GetBlockAtPosition(int3 blockPosition)
         {
@@ -132,69 +198,7 @@ namespace UnityVoxelCommunityProject.Terrain
                 }
             }
         }
-            
-        private void Update()
-        {
-            /*if (Input.GetKeyDown(KeyCode.Alpha1))
-            {
-                Local();
-            }*/
-            
-            if(Input.GetKeyDown(KeyCode.Alpha5))
-            {
-                UpdateChunks();
-            }
-        }
-
-        public void UpdateChunks()
-        {
-            float time = Time.realtimeSinceStartup;
-                
-            for (int i = 0; i < usedChunks.Count; i++)
-            {
-                usedChunks[i].Local();
-            }
-
-            Debug.Log($"Chunks rebuild took: {Time.realtimeSinceStartup - time}s");
-        }
-
-        public void Local()
-        {
-            float time = Time.realtimeSinceStartup;
-            int renderDistance = SettingsHolder.Instance.displayOptions.chunkRenderDistance;
-            
-            for (int z = 0; z < renderDistance; z++)
-            for (int x = 0; x < renderDistance; x++)
-            {
-                SimpleCreate(new Vector3(x * width, 0, z * width));
-            }
-            
-            Debug.Log($"Full procedural terrain data and mesh generation took around {Time.realtimeSinceStartup - time}s. Generated in memory: {worldData.chunks.Count} chunks. Displaying right now: {usedChunks.Count} chunks. ");
-            
-        }
-
-        private void SimpleCreate(Vector3 position)
-        {
-            var created = Instantiate(chunkPrefab, tf).GetComponent<Chunk>();
-            created.name = $"Chunk [x{position.x} z{position.z}]";
-            created.transform.position = position;
-            usedChunks.Add(created);
-
-            created.Initialize(blocksPerChunk);
-            created.Local();
-            
-            usedChunksMap.Add(created.chunkPosition, created);
-        }
         
-        private void OnApplicationQuit()
-        {
-            for (int i = 0; i < usedChunks.Count; i++)
-                usedChunks[i].Dispose();
-
-            for (int i = 0; i < chunksPool.Count; i++)
-                chunksPool[i].Dispose();
-
-            atlasMap.Dispose();
-        }
+        #endregion
     }
 }

@@ -4026,7 +4026,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 963194225}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: ac4fe9898d9edbe46ab4b9f3c66bd9c5, type: 3}
   m_Name: 
@@ -4557,11 +4557,14 @@ MonoBehaviour:
     WASD, shift - move,
     run.
 
-    LMB, RMB - dig, build
+    LMB, RMB - dig, build.
+
+    Wheel - block type.
 
     L - light.
 
-    F5, F9 - save, load.'
+    F5,
+    F9 - save, load.'
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
@@ -4829,7 +4832,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1100592803}
   m_LocalRotation: {x: 0, y: -0.99038106, z: 0, w: -0.13836686}
-  m_LocalPosition: {x: 22, y: 48, z: 22.6}
+  m_LocalPosition: {x: 8, y: 130, z: 8}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
   - {fileID: 963194228}
@@ -4952,7 +4955,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   intentionallyPlaced: 1
---- !u!28 &1124982733
+--- !u!28 &1116608805
 Texture2D:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -5169,6 +5172,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6ba1c77e1ea74cd0bc22e5f2ce82164e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  indexFormat: 0
   useJobSystem: 1
 --- !u!114 &1218486491
 MonoBehaviour:
@@ -5182,6 +5186,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 48220921ce5649e0acba803dcd8a38c9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  justSingleTestChunk: 0
   chunkPrefab: {fileID: 7692409391342487142, guid: dc6c0ae7622e40241814eed75eae8db4,
     type: 3}
   blocksPerChunk: 0
@@ -5197,8 +5202,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f423b2020176447d9f57ed3ce1e2d47f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  currentGenerator: 1
   useJobSystem: 1
-  batchParallelFor: 64
+  batchParallelFor: 256
 --- !u!1 &1239790064
 GameObject:
   m_ObjectHideFlags: 0
@@ -7525,7 +7531,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2047284617}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: ddb8ee0acfbf401e98176cf306146026, type: 3}
   m_Name: 
@@ -7671,7 +7677,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Texture: {fileID: 1124982733}
+  m_Texture: {fileID: 1116608805}
   m_UVRect:
     serializedVersion: 2
     x: 0

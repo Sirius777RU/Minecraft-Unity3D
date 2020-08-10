@@ -26,30 +26,33 @@ namespace UnityVoxelCommunityProject.Terrain
         private int3 volumeStart, volumeEnd;
         private int width, height, widthSqr;
 
+        private Mesh mesh;
+
         [ReadOnly] private NativeArray<Block> currentChunk, rightChunk, leftChunk, backChunk, frontChunk;
         
     
         public void Initialize(int blocksCount)
         {
-            vertices  = new NativeList<float3>(15000, Allocator.Persistent);
-            normals   = new NativeList<float3>(15000, Allocator.Persistent);
-            triangles = new NativeList<int>(25000, Allocator.Persistent); 
-            uv        = new NativeList<float2>(15000, Allocator.Persistent);
+            vertices  = new NativeList<float3>(10000, Allocator.Persistent);
+            normals   = new NativeList<float3>(10000, Allocator.Persistent);
+            triangles = new NativeList<int>(15000, Allocator.Persistent); 
+            uv        = new NativeList<float2>(10000, Allocator.Persistent);
 
             tf = GetComponent<Transform>();
             meshFilter   = GetComponent<MeshFilter>();
             meshRenderer = GetComponent<MeshRenderer>();
             meshCollider = GetComponent<MeshCollider>();
-            
-            meshFilter.mesh = new Mesh();
-            meshFilter.mesh.MarkDynamic();
-            meshCollider.sharedMesh = meshFilter.mesh;
-            
+
+            mesh = new Mesh();
+            mesh.MarkDynamic();
+            meshFilter.mesh = mesh;
+            meshCollider.cookingOptions = MeshColliderCookingOptions.None;
+
             width  = SettingsHolder.Instance.proceduralGeneration.chunkWidth;
             height = SettingsHolder.Instance.proceduralGeneration.chunkHeight;
             widthSqr = width * width;
             
-            meshFilter.mesh.bounds = new Bounds(new Vector3(width/2, height/2, width/2), new Vector3(width, height, width));
+            meshFilter.mesh.bounds = new Bounds(new Vector3((width + 2)/2, (height + 2)/2, (width + 2)/2), new Vector3((width + 2), (height + 2), (width + 2)));
         }
 
         public void Local()
@@ -57,18 +60,18 @@ namespace UnityVoxelCommunityProject.Terrain
             RecalculatePosition();
          
             //Generate chunk with neighbors.
-            TerrainProceduralGeneration.Instance.GenerateChunk(chunkPosition, withNeighbors: true);
+            TerrainProceduralGeneration.Instance.RequestChunkGeneration(chunkPosition, withNeighbors: true);
             
             //Grab the result.
             GrabChunksData();
             
             //And use all data it to display mesh;
-            ChunksGeometryGeneration.Instance.UpdateGeometry(meshFilter.mesh, 
+            ChunksGeometryGeneration.Instance.UpdateGeometry(mesh, 
                                                              currentChunk, rightChunk, leftChunk, frontChunk, backChunk, 
                                                              vertices, normals, triangles, uv); 
             
-            //Also cause physics to update.
-            meshCollider.sharedMesh = meshFilter.mesh;
+            //Then cause physics to update. That's not cheap, but out of other options here.
+            meshCollider.sharedMesh = mesh;
         }
 
         private void RecalculatePosition()
@@ -77,12 +80,15 @@ namespace UnityVoxelCommunityProject.Terrain
             int z = Mathf.FloorToInt(tf.position.z / width);
 
             chunkPosition = new int2(x, z);
-            
+        }
+
+        private void RecalculateVolume()
+        {
             int2 from = (chunkPosition * width);
             int2 to   = (chunkPosition * width) + new int2(width, width);
             
             volumeStart = new int3(from.x, 0, from.y);
-            volumeEnd = new int3(to.x, height, to.y);
+            volumeEnd   = new int3(to.x, height, to.y);
         }
 
         private void GrabChunksData()

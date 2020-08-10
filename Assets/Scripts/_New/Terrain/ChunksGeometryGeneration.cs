@@ -1,5 +1,7 @@
-﻿using Unity.Burst;
+﻿using System.Runtime.CompilerServices;
+using Unity.Burst;
 using Unity.Collections;
+using Unity.Collections.LowLevel.Unsafe;
 using Unity.Jobs;
 using Unity.Mathematics;
 using UnityEngine;
@@ -10,8 +12,9 @@ namespace UnityVoxelCommunityProject.Terrain
 {
     public class ChunksGeometryGeneration : Singleton<ChunksGeometryGeneration>
     {
+        public IndexFormat indexFormat = IndexFormat.UInt16;
         public bool useJobSystem = true;
-        
+
         public void UpdateGeometry(Mesh mesh,
                                    NativeArray<Block> currentChunk,
                                    NativeArray<Block> rightChunk, NativeArray<Block> leftChunk,
@@ -60,7 +63,7 @@ namespace UnityVoxelCommunityProject.Terrain
 
             var outputMeshDataArray = Mesh.AllocateWritableMeshData(1);
             var outputMeshData = outputMeshDataArray[0];
-            outputMeshData.SetIndexBufferParams(triangles.Length, IndexFormat.UInt32);
+            outputMeshData.SetIndexBufferParams(triangles.Length, indexFormat);
             outputMeshData.SetVertexBufferParams(vertices.Length,
                                              new VertexAttributeDescriptor(VertexAttribute.Position),
                                              new VertexAttributeDescriptor(VertexAttribute.Normal, stream: 1),
@@ -108,13 +111,13 @@ namespace UnityVoxelCommunityProject.Terrain
             //Debug.Log($"Geometry took: {Time.realtimeSinceStartup - time}");
         }
         
-        [BurstCompile(FloatPrecision.Low, FloatMode.Fast, CompileSynchronously = true)]
+        [BurstCompile(FloatPrecision.Low, FloatMode.Fast)]
         private struct GenerateMeshJob : IJob
         {
             [ReadOnly] public NativeArray<Block> currentChunk, 
                                                  leftChunk, rightChunk, frontChunk, backChunk;
             
-            [ReadOnly] public NativeArray<int2> atlasMap;
+            [NativeDisableContainerSafetyRestriction][ReadOnly] public NativeArray<int2> atlasMap;
             public int width, height;
             
             [WriteOnly] public NativeList<float3> vertices;
@@ -122,7 +125,7 @@ namespace UnityVoxelCommunityProject.Terrain
             [WriteOnly] public NativeList<int>    triangles;
             [WriteOnly] public NativeList<float2> uv;
             
-            public void Execute()
+            public unsafe void Execute()
             {
                 int vCount = 0;
                 
@@ -355,24 +358,25 @@ namespace UnityVoxelCommunityProject.Terrain
                         }
                     }
                 }
+                
             }
-
+            
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             private bool Opaque(Block current, Block target)
             {
-                if (target == Block.Air)
+                if (target == Block.Air || target == Block.Water ||
+                    target == Block.Leaves && current != Block.Leaves)
+                {
                     return false;
-                
-                if (target == Block.Water)
-                    return false;
-                
-                if (target == Block.Leaves && current != Block.Leaves)
-                    return false;
-
-                return true;
+                }
+                else
+                {
+                    return true;
+                }
             }
         }
         
-        [BurstCompile(FloatPrecision.Low, FloatMode.Fast, CompileSynchronously = true)]
+        [BurstCompile(FloatPrecision.Low, FloatMode.Fast)]
         private struct WriteToMeshJob : IJob
         {
             [ReadOnly] public NativeList<float3> vertices;
@@ -382,21 +386,18 @@ namespace UnityVoxelCommunityProject.Terrain
 
             public Mesh.MeshData outputMeshData;
             
-            public void Execute()
+            public unsafe void Execute()
             {
-                var outputVerts = outputMeshData.GetVertexData<float3>();
+                var outputVerts   = outputMeshData.GetVertexData<float3>();
                 var outputNormals = outputMeshData.GetVertexData<float3>(1);
-                var outputUVs   = outputMeshData.GetVertexData<float2>(stream: 2);
+                var outputUVs     = outputMeshData.GetVertexData<float2>(stream: 2);
                 
                 var vCount = vertices.Length;
                 var tCount = triangles.Length;
 
-                for (var i = 0; i < vCount; i++)
-                {
-                    outputVerts[i] = vertices[i];
-                    outputNormals[i] = normals[i];
-                    outputUVs[i] = uv[i];
-                }
+                outputVerts.CopyFrom(vertices);
+                outputNormals.CopyFrom(normals);
+                outputUVs.CopyFrom(uv);
                 
                 if (outputMeshData.indexFormat == IndexFormat.UInt16)
                 {
@@ -407,8 +408,7 @@ namespace UnityVoxelCommunityProject.Terrain
                 else
                 {
                     var outputTriangles = outputMeshData.GetIndexData<int>();
-                    for (var i = 0; i < tCount; i++)
-                        outputTriangles[i] = triangles[i];
+                    outputTriangles.CopyFrom(triangles);
                 }
             }
         }

@@ -13,5 +13,5 @@ MonoBehaviour:
   m_Name: Generation Settings
   m_EditorClassIdentifier: 
   chunkWidth: 16
-  chunkHeight: 64
-  seaLevel: 28
+  chunkHeight: 128
+  seaLevel: 24
