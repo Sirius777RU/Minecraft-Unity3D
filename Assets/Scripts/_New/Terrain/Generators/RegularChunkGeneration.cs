@@ -26,47 +26,52 @@ namespace UnityVoxelCommunityProject.Terrain.ProceduralGeneration
             z = i / width;
             x = i % width;
             
+            float noiseScale = 0.02f;
             float3 noiseMapping = new float3(x + (chunkPosition.x * width),
                                              z + (chunkPosition.y * width),
-                                            y * 2f)
-                                * 0.02f;
+                                            y * 2f);
+
+            float noiseResult = math.pow(math.unlerp(-1, 1,noise.snoise(noiseMapping * noiseScale)) * 30, 0.9f);
+
+            float heightMap  = (height * 0.3f) + noiseResult;
+            float stoneLevel = (height * 0.25f) + noiseResult;
+
+            bool underground = false;
             
-            float noiseResult = math.pow(math.unlerp(-1, 1,noise.snoise(noiseMapping)) * 30, 0.9f);
-
-
-            float heightMap  = height * 0.3f + noiseResult;
-            float stoneLevel = (height * 0.25f) + noiseResult / 2;
-
-            /*float3 noiseMapping = new float3(x + (chunkPosition.x * width), z + (chunkPosition.y * width), y) * 0.015f;
-
-            float noiseResult = math.unlerp(-1, 1, noise.snoise(noiseMapping));
-            if (noiseResult > 0.4f)
-            {
-                currentChunk[index] = Terrain.Block.Dirt;
-            }
-            else
-            {
-                currentChunk[index] = Terrain.Block.Air;
-            }*/
-
-
             if (y <= stoneLevel)
             {
                 currentChunk[index] = Block.Stone;
+                underground = true;
+                
+                if (y == 0)
+                    currentChunk[index] = Terrain.Block.Core;
             }
             else if (y <= heightMap)
             {
                 currentChunk[index] = Block.Dirt;
-
-                /*if (y > heightMap - 1 && y > seaLevel - 2)
-                {
-                    currentChunk[index] = Block.Grass;
-                }*/
+                underground         = true;
             }
 
-            if (y == 0)
+            if (underground && y > 0)
             {
-                currentChunk[index] = Terrain.Block.Core;
+                float3 caveMapping = new float3(noiseMapping.x,
+                                                noiseMapping.y,
+                                                y * 1.2f);
+            
+            
+                float caveMask = math.unlerp(-1, 1,noise.snoise(caveMapping * 0.05f) * 10f);
+                caveMask = (caveMask + 16) / 4;
+            
+                float caveNoise = math.unlerp(-1, 1,noise.snoise(caveMapping * 0.08f) * 10f);
+                caveNoise = (caveNoise + 6f) / 5;
+                if (caveNoise < 1.45f && caveMask < 3.6f)
+                {
+                    currentChunk[index] = Block.Air;
+                }
+                else
+                {
+                    //currentChunk[index] = Block.Stone;
+                }
             }
         }
     }

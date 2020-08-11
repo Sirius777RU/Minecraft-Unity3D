@@ -13,7 +13,10 @@ namespace UnityVoxelCommunityProject.Terrain
 {
     public class ChunkManager : Singleton<ChunkManager>
     {
-        public bool justSingleTestChunk = false;
+        public int initialOffset = 128;
+        [Space(10)]
+        public bool updateColliders = true;
+        public bool singleChunk = false;
         public GameObject chunkPrefab;
 
         public WorldData worldData;
@@ -77,7 +80,7 @@ namespace UnityVoxelCommunityProject.Terrain
         public void Local()
         {
             float time = Time.realtimeSinceStartup;
-            int renderDistance = justSingleTestChunk ? 1 : SettingsHolder.Instance.displayOptions.chunkRenderDistance;
+            int renderDistance = singleChunk ? 1 : SettingsHolder.Instance.displayOptions.chunkRenderDistance;
             
             for (int z = 0; z < renderDistance; z++)
             for (int x = 0; x < renderDistance; x++)
@@ -139,6 +142,10 @@ namespace UnityVoxelCommunityProject.Terrain
         public Block GetBlockAtPosition(int2 chunkPosition, int3 blockPosition)
         {
             int i = blockPosition.x + blockPosition.z * width + blockPosition.y * widthSqr;
+            
+            chunkPosition.x += initialOffset;
+            chunkPosition.y += initialOffset;
+            
             return worldData.chunks[chunkPosition].blocks[i];
         }
         
@@ -165,6 +172,9 @@ namespace UnityVoxelCommunityProject.Terrain
             
             chunkPosition.x = Mathf.FloorToInt((0f + blockPosition.x) / width);
             chunkPosition.y = Mathf.FloorToInt((0f + blockPosition.z) / width);
+            
+            chunkPosition.x += initialOffset;
+            chunkPosition.y += initialOffset;
 
             blockPosition.x = blockPosition.x >= 0 ? ((blockPosition.x % width + width) % width) : ((blockPosition.x % width + width) % width);
             blockPosition.z = blockPosition.z >= 0 ? ((blockPosition.z % width + width) % width) : ((blockPosition.z % width + width) % width);

@@ -58,7 +58,7 @@ namespace UnityVoxelCommunityProject.Terrain
         public void Local()
         {
             RecalculatePosition();
-         
+
             //Generate chunk with neighbors.
             TerrainProceduralGeneration.Instance.RequestChunkGeneration(chunkPosition, withNeighbors: true);
             
@@ -71,7 +71,8 @@ namespace UnityVoxelCommunityProject.Terrain
                                                              vertices, normals, triangles, uv); 
             
             //Then cause physics to update. That's not cheap, but out of other options here.
-            meshCollider.sharedMesh = mesh;
+            if(ChunkManager.Instance.updateColliders)
+                meshCollider.sharedMesh = mesh;
         }
 
         private void RecalculatePosition()
@@ -79,7 +80,12 @@ namespace UnityVoxelCommunityProject.Terrain
             int x = Mathf.FloorToInt(tf.position.x / width);
             int z = Mathf.FloorToInt(tf.position.z / width);
 
-            chunkPosition = new int2(x, z);
+            //Add custom offset.
+            int  initialOffset = ChunkManager.Instance.initialOffset;
+            int2 offset        = new int2(initialOffset, initialOffset);
+            
+            chunkPosition = new int2(x + offset.x, z + offset.y);
+
         }
 
         private void RecalculateVolume()

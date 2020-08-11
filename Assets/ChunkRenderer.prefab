@@ -50,7 +50,7 @@ MeshRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 7692409391342487142}
   m_Enabled: 1
-  m_CastShadows: 1
+  m_CastShadows: 2
   m_ReceiveShadows: 1
   m_DynamicOccludee: 1
   m_MotionVectors: 1
@@ -109,3 +109,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 62e581307216a3e4eb38e08179a42bbf, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  chunkPosition:
+    x: 0
+    y: 0
