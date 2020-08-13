@@ -1,41 +1,48 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using Unity.Collections;
 using UnityEngine;
 using Unity.Mathematics;
 using UnityVoxelCommunityProject.General;
+using UnityVoxelCommunityProject.General.Controls;
 using UnityVoxelCommunityProject.Serialization;
 using UnityVoxelCommunityProject.Utility;
-using Random = UnityEngine.Random;
 
 namespace UnityVoxelCommunityProject.Terrain
 {
     public class ChunkManager : Singleton<ChunkManager>
     {
+        public int framesPerStage = 3;
+        public int maximumStageChangesPerFrame = 1;
         public int initialOffset = 128;
         [Space(10)]
         public bool updateColliders = true;
-        public bool singleChunk = false;
+        public int instantDistance;
         public GameObject chunkPrefab;
 
         public WorldData worldData;
         
         private List<Chunk> usedChunks = new List<Chunk>();
-        private List<Chunk> chunksPool = new List<Chunk>();
+        private Queue<Chunk> chunksPool = new Queue<Chunk>();
+        private Queue<Chunk> chunksProcessing = new Queue<Chunk>();
 
         private Dictionary<int2, Chunk> usedChunksMap = new Dictionary<int2, Chunk>();
 
-        private Transform tf;
         [HideInInspector] public int blocksPerChunk;
+        private Transform tf, playerTf;
+        
         private CurrentGenerationSettings settings;
         private int width, height, widthSqr;
+        private int2 lastPlayerPosition = new int2(Double.NegativeInfinity);
 
         public NativeArray<int2> atlasMap;
         
         public void Initialize()
         {
             tf = GetComponent<Transform>();
+            playerTf = PlayerMovement.Instance.tf;
             SettingsHolder.Instance.blockData.GrabUVMappingArray(out atlasMap, Allocator.Persistent);
             settings = SettingsHolder.Instance.proceduralGeneration;
 
@@ -46,15 +53,37 @@ namespace UnityVoxelCommunityProject.Terrain
             blocksPerChunk = (width) * (width) * 
                              height;
 
-            SimpleCreate(new Vector3(0, 0, 0));
-            StartCoroutine(WaitTillNextFrameToDoLocal());
+            FillPool();
+            Local();
+            //StartCoroutine(WaitTillNextFrameToDoLocal());
         }
 
         private void Update()
         {
+            Local();
+
             if(Input.GetKeyDown(KeyCode.Alpha5))
             {
                 UpdateChunks();
+            }
+
+            int length = chunksProcessing.Count;
+            for (int i = 0; i < length; i++)
+            {
+                
+                var chunk = chunksProcessing.Dequeue();
+                chunk.Local(false);
+
+                if(chunk.currentStage == ChunkProcessing.Finished)
+                    continue;
+
+                if (i < maximumStageChangesPerFrame &&
+                    chunk.framesInCurrentProcessingStage >= framesPerStage)
+                {
+                    chunk.readyForNextStage = true;
+                }
+                
+                chunksProcessing.Enqueue(chunk);
             }
         }
 
@@ -64,7 +93,7 @@ namespace UnityVoxelCommunityProject.Terrain
                 
             for (int i = 0; i < usedChunks.Count; i++)
             {
-                usedChunks[i].Local();
+                usedChunks[i].Local(true);
             }
 
             Debug.Log($"Chunks rebuild took: {Time.realtimeSinceStartup - time}s");
@@ -79,32 +108,138 @@ namespace UnityVoxelCommunityProject.Terrain
 
         public void Local()
         {
-            float time = Time.realtimeSinceStartup;
-            int renderDistance = singleChunk ? 1 : SettingsHolder.Instance.displayOptions.chunkRenderDistance;
-            
-            for (int z = 0; z < renderDistance; z++)
-            for (int x = 0; x < renderDistance; x++)
+            int2 playerChunkPosition = PlayerMovement.Instance.playerChunkPosition;
+
+            if (playerChunkPosition.x == lastPlayerPosition.x &&
+                playerChunkPosition.y == lastPlayerPosition.y)
             {
-                if(x + z == 0) continue;
-                
-                SimpleCreate(new Vector3(x * width, 0, z * width));
+                return;
             }
             
-            Debug.Log($"Full procedural terrain data and mesh generation took around {Time.realtimeSinceStartup - time}s. Generated in memory: {worldData.chunks.Count} chunks. Displaying right now: {usedChunks.Count} chunks. ");
+            int distance = SettingsHolder.Instance.displayOptions.chunkRenderDistance;
+            ValidateChunks(distance);
             
+            DisplayChunks(instantDistance, true);
+            DisplayChunks(distance: distance, 
+                           instant: false);
         }
 
-        private void SimpleCreate(Vector3 position)
+        private void ValidateChunks(int renderDistance)
+        {
+            int2 displayPosition = PlayerMovement.Instance.playerChunkPosition + new int2(initialOffset, initialOffset);
+            Queue<int2> chunksToFree = new Queue<int2>();
+            
+            var chunksKeys = usedChunksMap.Keys.ToArray();
+            int length = chunksKeys.Length;
+            for (int i = 0; i < length; i++)
+            {
+                int d = Mathf.Max(Mathf.Abs(chunksKeys[i].x - displayPosition.x), 
+                                  Mathf.Abs(chunksKeys[i].y - displayPosition.y));
+                
+                if(d > renderDistance)
+                    chunksToFree.Enqueue(chunksKeys[i]);
+            }
+
+            length = chunksToFree.Count;
+            for (int i = 0; i < length; i++)
+            {
+                var chunkKey = chunksToFree.Dequeue();
+                var chunk = usedChunksMap[chunkKey];
+                usedChunksMap.Remove(chunkKey);
+                
+                chunk.FreeThisChunk();
+                chunksPool.Enqueue(chunk);
+            }
+        }
+        
+        private List<int2> chunksToDisplay = new List<int2>();
+        private void DisplayChunks(int distance, bool instant)
+        {
+            lastPlayerPosition = PlayerMovement.Instance.playerChunkPosition;
+            chunksToDisplay.Clear();
+            int2 finalOffset = new int2(initialOffset, initialOffset);
+            
+            if (distance <= 0)
+            {
+                chunksToDisplay.Add(new int2(0, 0));
+            }
+            else
+            {
+                for (int z = -(distance); z < (distance + 1); z++)
+                for (int x = -(distance); x < (distance + 1); x++)
+                {
+                    chunksToDisplay.Add(new int2(x, z));
+                }
+            }
+
+            chunksToDisplay.Sort((a, b) =>
+            {
+                return ((Mathf.Abs(a.x - lastPlayerPosition.x) + Mathf.Abs(a.y - lastPlayerPosition.y)) -
+                        (Mathf.Abs(b.x - lastPlayerPosition.x) + Mathf.Abs(b.y - lastPlayerPosition.y)));
+            });
+
+            int length = chunksToDisplay.Count;
+            for (int i = 0; i < length; i++)
+            {
+                int2 displayPosition = PlayerMovement.Instance.playerChunkPosition;
+                displayPosition.x += chunksToDisplay[i].x;
+                displayPosition.y += chunksToDisplay[i].y;
+
+                if(usedChunksMap.ContainsKey(displayPosition + finalOffset))
+                    continue;
+                
+                if (chunksPool.Count <= 0)
+                    FillPool(1);
+                
+                var chunk = chunksPool.Dequeue();
+                chunk.UseThisChunk(displayPosition, instant);
+                
+                if (!instant)
+                    chunksProcessing.Enqueue(chunk);
+                
+                usedChunksMap.Add(displayPosition + finalOffset, chunk);
+            }
+        }
+
+        private void SimpleCreate(int2 displayPosition)
         {
             var created = Instantiate(chunkPrefab, tf).GetComponent<Chunk>();
-            created.name = $"Chunk [x{position.x} z{position.z}]";
-            created.transform.position = position;
             usedChunks.Add(created);
 
             created.Initialize(blocksPerChunk);
-            created.Local();
+            created.UseThisChunk(displayPosition);
             
             usedChunksMap.Add(created.chunkPosition, created);
+        }
+
+        private void FillPool(int count = 0)
+        {
+            int renderDistance = SettingsHolder.Instance.displayOptions.chunkRenderDistance;
+
+            if (count == 0)
+            {
+                for (int z = 0; z < renderDistance; z++)
+                for (int x = 0; x < renderDistance; x++)
+                {
+                    var created = Instantiate(chunkPrefab, tf).GetComponent<Chunk>();
+                    created.name = "Chunk [InPool]";
+                    chunksPool.Enqueue(created);
+
+                    created.Initialize(blocksPerChunk);
+                }
+            }
+            else
+            {
+                for (int i = 0; i < count; i++)
+                {
+                    var created = Instantiate(chunkPrefab, tf).GetComponent<Chunk>();
+                    created.name = "Chunk [InPool]";
+                    chunksPool.Enqueue(created);
+
+                    created.Initialize(blocksPerChunk);
+                }
+            }
+            
         }
         
         private void OnApplicationQuit()
@@ -113,7 +248,7 @@ namespace UnityVoxelCommunityProject.Terrain
                 usedChunks[i].Dispose();
 
             for (int i = 0; i < chunksPool.Count; i++)
-                chunksPool[i].Dispose();
+                chunksPool.Dequeue().Dispose();
 
             atlasMap.Dispose();
         }
@@ -160,8 +295,7 @@ namespace UnityVoxelCommunityProject.Terrain
             for (int z = from.z; z < to.z; z++)
             for (int x = from.x; x < to.x; x++)
             {
-                blocks[i] = Random.Range(0, 20) < 2 ? Block.Core : Block.Air; 
-                //blocks[i] = GetBlockAtPosition(new int3(x, y, z));
+                blocks[i] = GetBlockAtPosition(new int3(x, y, z));
                 i++;
             }
         }
@@ -184,33 +318,33 @@ namespace UnityVoxelCommunityProject.Terrain
 
             if (usedChunksMap.ContainsKey(chunkPosition))
             {
-                usedChunksMap[chunkPosition].Local();
+                usedChunksMap[chunkPosition].Local(true);
 
                 int2 setCheckPosition = int2.zero;
                 if (blockPosition.x == 0)
                 {
                     setCheckPosition = chunkPosition + new int2(-1, 0);
                     if (usedChunksMap.ContainsKey(setCheckPosition))
-                        usedChunksMap[setCheckPosition].Local();
+                        usedChunksMap[setCheckPosition].Local(true);
                 }
                 else if(blockPosition.x == width-1)
                 {
                     setCheckPosition = chunkPosition + new int2(1, 0);
                     if (usedChunksMap.ContainsKey(setCheckPosition))
-                        usedChunksMap[setCheckPosition].Local();
+                        usedChunksMap[setCheckPosition].Local(true);
                 }
 
                 if (blockPosition.z == 0)
                 {
                     setCheckPosition = chunkPosition + new int2(0, -1);
                     if (usedChunksMap.ContainsKey(setCheckPosition))
-                        usedChunksMap[setCheckPosition].Local();
+                        usedChunksMap[setCheckPosition].Local(true);
                 }
                 else if(blockPosition.z == width-1)
                 {
                     setCheckPosition = chunkPosition + new int2(0, 1);
                     if (usedChunksMap.ContainsKey(setCheckPosition))
-                        usedChunksMap[setCheckPosition].Local();
+                        usedChunksMap[setCheckPosition].Local(true);
                 }
             }
         }

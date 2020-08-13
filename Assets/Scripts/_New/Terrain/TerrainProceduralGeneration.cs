@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using Unity.Burst;
 using Unity.Collections;
 using Unity.Jobs;
@@ -15,39 +16,43 @@ namespace UnityVoxelCommunityProject.Terrain
     {
         public Generator currentGenerator = Generator.Regular;
         [Space(10)]
-        public                  bool useJobSystem     = true;
         [Range(1, 4096)] public int  batchParallelFor = 64;
+        
+        public Dictionary<int2, JobHandle> currentlyInGenerationMap = new Dictionary<int2, JobHandle>();
 
-        public void RequestChunkGeneration(int2 chunkPosition, bool withNeighbors)
+        public void RequestChunkGeneration(int2 chunkPosition, bool withNeighbors, bool instant = true)
         {
             if (!withNeighbors)
             {
-                GenerateChunk(chunkPosition);
+                JobHandle handle = PrepareChunkGeneration(chunkPosition);
+                currentlyInGenerationMap.Add(chunkPosition, handle);
             }
             else
             {
                 chunkPosition -= new int2(1, 1);
-
-                for (int y = 0; y < 3; y++)
+                for (int z = 0; z < 3; z++)
                 for (int x = 0; x < 3; x++)
                 {
-                    GenerateChunk(chunkPosition + new int2(x, y));
+                    if(ChunkManager.Instance.worldData.chunks.ContainsKey(chunkPosition + new int2(x, z)))
+                        continue;
+                    
+                    currentlyInGenerationMap.Add(chunkPosition + new int2(x, z),
+                                                 PrepareChunkGeneration(chunkPosition + new int2(x, z)));
                 }
             }
+            
+            
         }
         
-        private void GenerateChunk(int2 chunkPosition)
+        private JobHandle PrepareChunkGeneration(int2 chunkPosition)
         {
-            if (ChunkManager.Instance.worldData.chunks.ContainsKey(chunkPosition))
-            {
-                return;
-            }
-
             ChunkData chunkData = new ChunkData()
             {
                 blocks = new NativeArray<Block>(ChunkManager.Instance.blocksPerChunk, Allocator.Persistent)
             };
 
+            ChunkManager.Instance.worldData.chunks.Add(chunkPosition, chunkData);
+            
             int width  = SettingsHolder.Instance.proceduralGeneration.chunkWidth;
             int height = SettingsHolder.Instance.proceduralGeneration.chunkHeight;
             int seaLevel = SettingsHolder.Instance.proceduralGeneration.seaLevel;
@@ -72,20 +77,9 @@ namespace UnityVoxelCommunityProject.Terrain
                     currentChunk = chunkData.blocks
                 };
 
-                if (useJobSystem)
-                {
-                    simpleChunkGenerator.Schedule(totalBlocksCount - 1, batchParallelFor).Complete();
-                }
-                else
-                {
-                    for (int i = 0; i < totalBlocksCount - 1; i++)
-                    {
-                        simpleChunkGenerator.Execute(i);
-                    }
-                }
-
+                return simpleChunkGenerator.Schedule(totalBlocksCount - 1, batchParallelFor);
             }
-            else if (currentGenerator == Generator.Regular)
+            else //if (currentGenerator == Generator.Regular)
             {
                 RegularChunkGenerationJob regularGenerationJob = new RegularChunkGenerationJob()
                 {
@@ -110,30 +104,20 @@ namespace UnityVoxelCommunityProject.Terrain
 
                     currentChunk = chunkData.blocks
                 };
-
-                if (useJobSystem)
-                {
-                    var handle = regularGenerationJob.Schedule(totalBlocksCount - 1, batchParallelFor);
-                    handle = regularChunkPostProcessJob.Schedule(handle);
-                    handle.Complete();
-                }
-                else
-                {
-                    for (int i = 0; i < totalBlocksCount - 1; i++)
-                    {
-                        regularGenerationJob.Execute(i);
-                    }
-                    
-                    regularChunkPostProcessJob.Execute();
-                }
+                
+                var handle = regularGenerationJob.Schedule(totalBlocksCount - 1, batchParallelFor);
+                return regularChunkPostProcessJob.Schedule(handle);
             }
             #endregion
-            
-            ChunkManager.Instance.worldData.chunks.Add(chunkPosition, chunkData);
-            
         }
 
-        
+        public void Complete(int2 position)
+        {
+            if (currentlyInGenerationMap.ContainsKey(position))
+            {
+                currentlyInGenerationMap[position].Complete();
+            }
+        }
         
         
     }

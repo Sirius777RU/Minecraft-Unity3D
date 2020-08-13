@@ -10,22 +10,19 @@ using UnityVoxelCommunityProject.Utility;
 
 namespace UnityVoxelCommunityProject.Terrain
 {
-    public class ChunksGeometryGeneration : Singleton<ChunksGeometryGeneration>
+    public class TerrainGeometryGeneration : Singleton<TerrainGeometryGeneration>
     {
         public IndexFormat indexFormat = IndexFormat.UInt16;
-        public bool useJobSystem = true;
 
-        public void UpdateGeometry(Mesh mesh,
-                                   NativeArray<Block> currentChunk,
-                                   NativeArray<Block> rightChunk, NativeArray<Block> leftChunk,
-                                   NativeArray<Block> frontChunk, NativeArray<Block> backChunk,
+        public GenerateMeshJob GenerateGeometry(Mesh mesh,
+                                                NativeArray<Block> currentChunk,
+                                                NativeArray<Block> rightChunk, NativeArray<Block> leftChunk,
+                                                NativeArray<Block> frontChunk, NativeArray<Block> backChunk,
                                    
-                                   NativeList<float3> vertices,
-                                   NativeList<float3> normals,
-                                   NativeList<int> triangles, NativeList<float2> uv)
+                                                NativeList<float3> vertices,
+                                                NativeList<float3> normals,
+                                                NativeList<int> triangles, NativeList<float2> uv)
         {
-            var time = Time.realtimeSinceStartup;
-            
             mesh.name = "chunkMesh";
             
             vertices.Clear();
@@ -33,7 +30,7 @@ namespace UnityVoxelCommunityProject.Terrain
             normals.Clear();
             uv.Clear();
             
-            GenerateMeshJob generateMeshJob = new GenerateMeshJob()
+            return new GenerateMeshJob()
             {
                 currentChunk = currentChunk,
                 
@@ -50,17 +47,17 @@ namespace UnityVoxelCommunityProject.Terrain
                 triangles = triangles,
                 uv        = uv
             };
+        }
 
-            if (useJobSystem)
-            {
-                var generationHandle = generateMeshJob.Schedule();
-                generationHandle.Complete();
-            }
-            else
-            {
-                generateMeshJob.Execute();
-            }
-
+        public void ApplyGeometry(Mesh mesh,
+                                  NativeArray<Block> currentChunk,
+                                  NativeArray<Block> rightChunk, NativeArray<Block> leftChunk,
+                                  NativeArray<Block> frontChunk, NativeArray<Block> backChunk,
+                                   
+                                  NativeList<float3> vertices,
+                                  NativeList<float3> normals,
+                                  NativeList<int> triangles, NativeList<float2> uv)
+        {
             var outputMeshDataArray = Mesh.AllocateWritableMeshData(1);
             var outputMeshData = outputMeshDataArray[0];
             outputMeshData.SetIndexBufferParams(triangles.Length, indexFormat);
@@ -89,15 +86,8 @@ namespace UnityVoxelCommunityProject.Terrain
                 uv        = uv
             };
 
-            if (useJobSystem)
-            {
-                var writeToMeshHandle = writeToMeshJob.Schedule();
-                writeToMeshHandle.Complete();
-            }
-            else
-            {
-                writeToMeshJob.Execute();
-            }
+            var writeToMeshHandle = writeToMeshJob.Schedule();
+            writeToMeshHandle.Complete();
 
             Mesh.ApplyAndDisposeWritableMeshData(outputMeshDataArray, mesh,
                                                  MeshUpdateFlags.DontValidateIndices |
@@ -107,12 +97,11 @@ namespace UnityVoxelCommunityProject.Terrain
             //mesh.RecalculateNormals();
             //mesh.RecalculateTangents();
             //mesh.RecalculateBounds();
-            
-            //Debug.Log($"Geometry took: {Time.realtimeSinceStartup - time}");
         }
-        
+    }
+    
         [BurstCompile(FloatPrecision.Low, FloatMode.Fast, CompileSynchronously = true)]
-        private struct GenerateMeshJob : IJob
+        public struct GenerateMeshJob : IJob
         {
             [ReadOnly] public NativeArray<Block> currentChunk, 
                                                  leftChunk, rightChunk, frontChunk, backChunk;
@@ -377,7 +366,7 @@ namespace UnityVoxelCommunityProject.Terrain
         }
         
         [BurstCompile(FloatPrecision.Low, FloatMode.Fast, CompileSynchronously = true)]
-        private struct WriteToMeshJob : IJob
+        public struct WriteToMeshJob : IJob
         {
             [ReadOnly] public NativeList<float3> vertices;
             [ReadOnly] public NativeList<float3> normals;
@@ -412,5 +401,4 @@ namespace UnityVoxelCommunityProject.Terrain
                 }
             }
         }
-    }
 }

@@ -19,7 +19,7 @@ namespace UnityVoxelCommunityProject.General.Controls
         public float actionCooldown = 0.1f;
         
         private Transform player;
-        private Transform camera;
+        private Transform mainCamera;
         private Transform tf;
 
         private float currentCooldownTime = 0;
@@ -29,7 +29,7 @@ namespace UnityVoxelCommunityProject.General.Controls
         {
             tf = GetComponent<Transform>();
             player = PlayerMovement.Instance.tf;
-            camera = MouseLook.Instance.tf;
+            mainCamera = MouseLook.Instance.tf;
         }
 
         private void Update()
@@ -58,10 +58,10 @@ namespace UnityVoxelCommunityProject.General.Controls
             }
             
             RaycastHit hitInfo;
-            if (Physics.Raycast(camera.position, camera.forward, out hitInfo, maxDistance, collideWith))
+            if (Physics.Raycast(mainCamera.position, mainCamera.forward, out hitInfo, maxDistance, collideWith))
             {
                 //Move a little inside the block
-                Vector3 selectionPoint = hitInfo.point + camera.forward * deepenRaycastPoint; 
+                Vector3 selectionPoint = hitInfo.point + mainCamera.forward * deepenRaycastPoint; 
                 
                 tf.position = new Vector3(Mathf.FloorToInt(selectionPoint.x), 
                                           Mathf.FloorToInt(selectionPoint.y), 
@@ -76,7 +76,7 @@ namespace UnityVoxelCommunityProject.General.Controls
 
                     if (leftClick)
                     {
-                        blockPoint = hitInfo.point + camera.forward * deepenRaycastPoint;
+                        blockPoint = hitInfo.point + mainCamera.forward * deepenRaycastPoint;
                         blockPosition = new int3(Mathf.FloorToInt(blockPoint.x + 1),
                                                  Mathf.FloorToInt(blockPoint.y + 1),
                                                  Mathf.FloorToInt(blockPoint.z + 1));
@@ -91,7 +91,7 @@ namespace UnityVoxelCommunityProject.General.Controls
                     }
                     else if (rightClick)
                     {
-                        blockPoint = hitInfo.point - camera.forward * deepenRaycastPoint;
+                        blockPoint = hitInfo.point - mainCamera.forward * deepenRaycastPoint;
                         blockPosition = new int3(Mathf.FloorToInt(blockPoint.x + 1),
                                                  Mathf.FloorToInt(blockPoint.y + 1),
                                                  Mathf.FloorToInt(blockPoint.z + 1));

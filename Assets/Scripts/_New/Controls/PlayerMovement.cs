@@ -1,5 +1,7 @@
 ﻿using System;
+using Unity.Mathematics;
 using UnityEngine;
+using UnityVoxelCommunityProject.Utility;
 
 namespace UnityVoxelCommunityProject.General.Controls
 {
@@ -7,6 +9,8 @@ namespace UnityVoxelCommunityProject.General.Controls
     public class PlayerMovement : Singleton<PlayerMovement>
     {
         public PlayerMovementSettings settings;
+
+        public bool freeze = false;
 
         [HideInInspector] public Transform tf;
         [HideInInspector] public CharacterController controller;
@@ -33,11 +37,14 @@ namespace UnityVoxelCommunityProject.General.Controls
         private float walkRunSpeedDifference;
 
         private float initHeight;
-        private Vector3 initCenter;
         private bool  duringRunAnimation;
+        private Vector3 initCenter;
         
         private float inAirTimer;
         private float dt;
+
+        [HideInInspector] public int2 playerChunkPosition;
+        private int chunkWidth;
         
         private void Start()
         {
@@ -45,11 +52,17 @@ namespace UnityVoxelCommunityProject.General.Controls
             controller = GetComponent<CharacterController>();
             
             Initialize();
+            var temp = tf.position;
+            temp.y = SettingsHolder.Instance.proceduralGeneration.chunkHeight;
         }
 
         private void Update()
         {
-            dt = Time.deltaTime;
+            dt = Time.smoothDeltaTime;
+            
+            playerChunkPosition = new int2(Mathf.FloorToInt(tf.position.x / chunkWidth),
+                                           Mathf.FloorToInt(tf.position.z / chunkWidth));
+            
             CheckIfGrounded();
             
             SmoothInput();
@@ -69,8 +82,11 @@ namespace UnityVoxelCommunityProject.General.Controls
         private void Initialize()
         {
             finalRayLength = settings.rayLength + controller.center.y;
+            chunkWidth = SettingsHolder.Instance.proceduralGeneration.chunkWidth;
+            
+            playerChunkPosition = new int2(Mathf.FloorToInt(tf.position.x / chunkWidth),
+                                           Mathf.FloorToInt(tf.position.z / chunkWidth));
         }
-
 
         private void CheckIfGrounded()
         {
@@ -181,7 +197,8 @@ namespace UnityVoxelCommunityProject.General.Controls
 
         protected virtual void ApplyMovement()
         {
-            controller.Move(finalMoveVector * dt);
+            if(!freeze)
+                controller.Move(finalMoveVector * dt);
         }
     }
 }

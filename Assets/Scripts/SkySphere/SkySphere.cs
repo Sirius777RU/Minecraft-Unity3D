@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using UnityEngine;
 
 //Apply currentTime settings to the visuals of the game.
+[SelectionBase]
 [ExecuteInEditMode]
 public class SkySphere : MonoBehaviour
 {

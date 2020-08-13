@@ -25,6 +25,7 @@ namespace UnityVoxelCommunityProject.General.Controls
         private void Start()
         {
             tf = GetComponent<Transform>();
+            Cursor.lockState = CursorLockMode.Locked;
         }
 
         private void Update()

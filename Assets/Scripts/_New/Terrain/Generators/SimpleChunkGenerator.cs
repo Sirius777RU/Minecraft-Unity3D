@@ -25,6 +25,11 @@ namespace UnityVoxelCommunityProject.Terrain.ProceduralGeneration
             i = i % (areaSquare);
             z = i / width;
             x = i % width;
+
+            /*if (y < 40)
+            {
+                currentChunk[index] = Block.Grass;
+            }*/
                 
             float snoiseResult = (math.unlerp(-1, 1, noise.snoise(new float2(x + (chunkPosition.x * width), z + (chunkPosition.y * width)) * 0.025f)) * 10);  
                 

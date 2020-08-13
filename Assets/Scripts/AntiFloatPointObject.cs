@@ -2,7 +2,10 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class AntiFloatPointObject : MonoBehaviour
+namespace UnityVoxelCommunityProject.Legacy
 {
-    public bool intentionallyPlaced = false;
+    public class AntiFloatPointObject : MonoBehaviour
+    {
+        public bool intentionallyPlaced = false;
+    }
 }
