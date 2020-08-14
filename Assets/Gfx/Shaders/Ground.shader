@@ -5,9 +5,12 @@
         _MainTex ("Color (RGB) Alpha (A)", 2D) = "white" {}
         //_Glossiness ("Smoothness", Range(0,1)) = 0.5
         //_Metallic ("Metallic", Range(0,1)) = 0.0
-        _Cutout("Cutout", Range(0,1)) = .95
+        _Cutout("Cutout", Range(0,1)) = .95               
+        _Thickness ("Thickness", 2D) = "bump" {}
         
-        _Thickness ("Thickness (R)", 2D) = "bump" {}
+        _Emission ("Emission", 2D) = "black" {}     
+        
+        _EmissionStrength ("Emission Strength", float) = 0
 		_Power ("Subsurface Power", Float) = 1.0
 		_Distortion ("Subsurface Distortion", Float) = 0.0
 		_Scale ("Subsurface Scale", Float) = 0.5
@@ -21,13 +24,12 @@
  
 
         CGPROGRAM
-        #pragma surface surf Translucent alphatest:_Cutout addshadow fullforwardshadows nometa 
+        #pragma surface surf Translucent alphatest:_Cutout addshadow fullforwardshadows nometa noforwardadd 
         #pragma target 3.0
         
         #include "UnityCG.cginc"
-        //#include "UnityStandardCore.cginc"
 
-        sampler2D _MainTex, _Thickness; 
+        sampler2D _MainTex, _Thickness, _Emission; 
 
         struct Input
         {
@@ -35,7 +37,7 @@
         };
 
         fixed4 _SubColor;
-        float _Scale, _Power, _Distortion;
+        float _Scale, _Power, _Distortion, _EmissionStrength;
 
         void surf (Input IN, inout SurfaceOutput o)
         {
@@ -43,6 +45,7 @@
             fixed4 c = tex2D (_MainTex, IN.uv_MainTex);
             o.Albedo = c.rgb;
             o.Gloss = tex2D(_Thickness, IN.uv_MainTex).r;
+            o.Emission = c.rgb * (tex2D(_Emission, IN.uv_MainTex));
             o.Alpha = c.a;
         }
         
@@ -67,8 +70,10 @@
 
 			// Add the two together.
 			float4 c;
-			c.rgb = diffAlbedo + (transAlbedo * thick);
+			c.rgb = diffAlbedo + (transAlbedo * thick) + (s.Emission * _EmissionStrength);
 			c.a = _LightColor0.a * atten;
+			
+			
 			return c;
 		}
 
