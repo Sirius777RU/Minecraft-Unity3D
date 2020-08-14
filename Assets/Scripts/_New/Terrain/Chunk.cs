@@ -112,7 +112,7 @@ namespace UnityVoxelCommunityProject.Terrain
         private void InstantDisplay()
         {
             //Generate chunk with neighbors.
-            TerrainProceduralGeneration.Instance.RequestChunkGeneration(chunkPosition, true, true);
+            TerrainProceduralGeneration.Instance.RequestChunkGeneration(chunkPosition, true);
             
             //Grab the result.
             GrabChunksData();
@@ -148,8 +148,7 @@ namespace UnityVoxelCommunityProject.Terrain
                     framesInCurrentProcessingStage = 0;
 
                     TerrainProceduralGeneration.Instance.RequestChunkGeneration(chunkPosition,
-                                                                                withNeighbors: true,
-                                                                                instant: false);
+                                                                                withNeighbors: true);
                 }
                 else if (currentStage == ChunkProcessing.TerrainDataGeneration)
                 {
@@ -218,20 +217,13 @@ namespace UnityVoxelCommunityProject.Terrain
 
         private void GrabChunksData()
         {
-            var generation = TerrainProceduralGeneration.Instance;
-            
-            generation.Complete(chunkPosition);
-            generation.Complete(chunkPosition + new int2(1, 0));
-            generation.Complete(chunkPosition + new int2(-1, 0));
-            generation.Complete(chunkPosition + new int2(0, 1));
-            generation.Complete(chunkPosition + new int2(0, -1));
-            
+            TerrainProceduralGeneration.Instance.Complete(chunkPosition, withNeighbors: true);
+
             currentChunk = ChunkManager.Instance.worldData.chunks[chunkPosition].blocks;
             rightChunk   = ChunkManager.Instance.worldData.chunks[chunkPosition + new int2(1, 0)].blocks;
             leftChunk    = ChunkManager.Instance.worldData.chunks[chunkPosition + new int2(-1, 0)].blocks;
             frontChunk   = ChunkManager.Instance.worldData.chunks[chunkPosition + new int2(0, 1)].blocks;
             backChunk    = ChunkManager.Instance.worldData.chunks[chunkPosition + new int2(0, -1)].blocks;
-            
         }
 
         public void Dispose()
@@ -246,8 +238,7 @@ namespace UnityVoxelCommunityProject.Terrain
     public enum ChunkProcessing
     {
         NotStarted,
-        TerrainDataGeneration,
-        MeshDataGeneration,
+        TerrainDataGeneration, MeshDataGeneration,
         Finished
     }
 }

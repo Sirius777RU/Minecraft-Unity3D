@@ -61,6 +61,7 @@ namespace UnityVoxelCommunityProject.Serialization
                 throw new Exception("There is no world data to save for some reason. ");
             }
             
+            TerrainProceduralGeneration.Instance.CompleteAll();
             ProtoWorldData protoWorldData = ChunkManager.Instance.worldData;
 
             float time = Time.realtimeSinceStartup;
@@ -98,6 +99,7 @@ namespace UnityVoxelCommunityProject.Serialization
         private void LoadWorld()
         {
             float time = Time.realtimeSinceStartup;
+            TerrainProceduralGeneration.Instance.CompleteAll();
             
             if (useCompression)
             {

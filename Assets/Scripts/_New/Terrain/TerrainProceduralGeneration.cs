@@ -20,12 +20,20 @@ namespace UnityVoxelCommunityProject.Terrain
         
         public Dictionary<int2, JobHandle> currentlyInGenerationMap = new Dictionary<int2, JobHandle>();
 
-        public void RequestChunkGeneration(int2 chunkPosition, bool withNeighbors, bool instant = true)
+        public void RequestChunkGeneration(int2 chunkPosition, bool withNeighbors)
         {
             if (!withNeighbors)
             {
-                JobHandle handle = PrepareChunkGeneration(chunkPosition);
-                currentlyInGenerationMap.Add(chunkPosition, handle);
+                if (currentlyInGenerationMap.ContainsKey(chunkPosition))
+                {
+                    currentlyInGenerationMap[chunkPosition].Complete();
+                    currentlyInGenerationMap.Remove(chunkPosition);
+                }
+                else
+                {
+                    JobHandle handle = PrepareChunkGeneration(chunkPosition);
+                    currentlyInGenerationMap.Add(chunkPosition, handle);
+                }
             }
             else
             {
@@ -33,11 +41,20 @@ namespace UnityVoxelCommunityProject.Terrain
                 for (int z = 0; z < 3; z++)
                 for (int x = 0; x < 3; x++)
                 {
-                    if(ChunkManager.Instance.worldData.chunks.ContainsKey(chunkPosition + new int2(x, z)))
+                    var position = chunkPosition + new int2(x, z); 
+                    
+                    if (currentlyInGenerationMap.ContainsKey(position))
+                    {
+                        currentlyInGenerationMap[position].Complete();
+                        currentlyInGenerationMap.Remove(position);
+                        continue;
+                    }
+                    
+                    if(ChunkManager.Instance.worldData.chunks.ContainsKey(position))
                         continue;
                     
-                    currentlyInGenerationMap.Add(chunkPosition + new int2(x, z),
-                                                 PrepareChunkGeneration(chunkPosition + new int2(x, z)));
+                    currentlyInGenerationMap.Add(position,
+                                                 PrepareChunkGeneration(position));
                 }
             }
             
@@ -111,14 +128,41 @@ namespace UnityVoxelCommunityProject.Terrain
             #endregion
         }
 
-        public void Complete(int2 position)
+        public void Complete(int2 position, bool withNeighbors = false)
         {
-            if (currentlyInGenerationMap.ContainsKey(position))
+            CompleteAndRemoveJob(position);
+
+            if (withNeighbors)
             {
-                currentlyInGenerationMap[position].Complete();
+                CompleteAndRemoveJob(position + new int2(1, 0));
+                CompleteAndRemoveJob(position + new int2(-1, 0));
+                CompleteAndRemoveJob(position + new int2(0, 1));
+                CompleteAndRemoveJob(position + new int2(0, -1));
+                
+                CompleteAndRemoveJob(position + new int2(1, 1));
+                CompleteAndRemoveJob(position + new int2(1, -1));
+                CompleteAndRemoveJob(position + new int2(-1, -1));
+                CompleteAndRemoveJob(position + new int2(-1, 1));
+            }
+
+            void CompleteAndRemoveJob(int2 localPosition)
+            {
+                if (currentlyInGenerationMap.ContainsKey(localPosition))
+                {
+                    currentlyInGenerationMap[localPosition].Complete();
+                    currentlyInGenerationMap.Remove(localPosition);
+                }
             }
         }
-        
-        
+
+        public void CompleteAll()
+        {
+            foreach (var keyValuePair in currentlyInGenerationMap)
+            {
+                keyValuePair.Value.Complete();
+            }
+            
+            currentlyInGenerationMap.Clear();
+        }
     }
 }
