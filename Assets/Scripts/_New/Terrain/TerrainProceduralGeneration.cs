@@ -18,7 +18,12 @@ namespace UnityVoxelCommunityProject.Terrain
         [Space(10)]
         [Range(1, 4096)] public int  batchParallelFor = 64;
         
-        public Dictionary<int2, JobHandle> currentlyInGenerationMap = new Dictionary<int2, JobHandle>();
+        public Dictionary<int2, Tuple<JobHandle, DataChunk>> currentlyInGenerationMap = new Dictionary<int2, Tuple<JobHandle, DataChunk>>();
+
+        private void OnApplicationQuit()
+        {
+            CompleteAll();
+        }
 
         public void RequestChunkGeneration(int2 chunkPosition, bool withNeighbors)
         {
@@ -26,13 +31,15 @@ namespace UnityVoxelCommunityProject.Terrain
             {
                 if (currentlyInGenerationMap.ContainsKey(chunkPosition))
                 {
-                    currentlyInGenerationMap[chunkPosition].Complete();
+                    var tuple = currentlyInGenerationMap[chunkPosition];
+                    tuple.Item1.Complete();
+                    tuple.Item2.ready = true;
+                    
                     currentlyInGenerationMap.Remove(chunkPosition);
                 }
                 else
                 {
-                    JobHandle handle = PrepareChunkGeneration(chunkPosition);
-                    currentlyInGenerationMap.Add(chunkPosition, handle);
+                    currentlyInGenerationMap.Add(chunkPosition, PrepareChunkGeneration(chunkPosition));
                 }
             }
             else
@@ -45,30 +52,32 @@ namespace UnityVoxelCommunityProject.Terrain
                     
                     if (currentlyInGenerationMap.ContainsKey(position))
                     {
-                        currentlyInGenerationMap[position].Complete();
+                        var tuple = currentlyInGenerationMap[position];
+                        tuple.Item1.Complete();
+                        tuple.Item2.ready = true;
+                        
                         currentlyInGenerationMap.Remove(position);
                         continue;
                     }
                     
-                    if(ChunkManager.Instance.worldData.chunks.ContainsKey(position))
+                    if(ChunkManager.Instance.dataWorld.chunks.ContainsKey(position))
                         continue;
                     
-                    currentlyInGenerationMap.Add(position,
-                                                 PrepareChunkGeneration(position));
+                    currentlyInGenerationMap.Add(position, PrepareChunkGeneration(position));
                 }
             }
             
             
         }
         
-        private JobHandle PrepareChunkGeneration(int2 chunkPosition)
+        private Tuple<JobHandle, DataChunk> PrepareChunkGeneration(int2 chunkPosition)
         {
-            ChunkData chunkData = new ChunkData()
+            DataChunk dataChunk = new DataChunk()
             {
                 blocks = new NativeArray<Block>(ChunkManager.Instance.blocksPerChunk, Allocator.Persistent)
             };
 
-            ChunkManager.Instance.worldData.chunks.Add(chunkPosition, chunkData);
+            ChunkManager.Instance.dataWorld.chunks.Add(chunkPosition, dataChunk);
             
             int width  = SettingsHolder.Instance.proceduralGeneration.chunkWidth;
             int height = SettingsHolder.Instance.proceduralGeneration.chunkHeight;
@@ -91,10 +100,9 @@ namespace UnityVoxelCommunityProject.Terrain
                     areaSquare = areaSquare,
                     seaLevel   = seaLevel,
 
-                    currentChunk = chunkData.blocks
+                    currentChunk = dataChunk.blocks
                 };
-
-                return simpleChunkGenerator.Schedule(totalBlocksCount - 1, batchParallelFor);
+                return new Tuple<JobHandle, DataChunk>(simpleChunkGenerator.Schedule(totalBlocksCount - 1, batchParallelFor), dataChunk);
             }
             else //if (currentGenerator == Generator.Regular)
             {
@@ -107,7 +115,7 @@ namespace UnityVoxelCommunityProject.Terrain
                     areaSquare = areaSquare,
                     seaLevel   = seaLevel,
 
-                    currentChunk = chunkData.blocks
+                    currentChunk = dataChunk.blocks
                 };
                 
                 RegularChunkPostProcessJob regularChunkPostProcessJob = new RegularChunkPostProcessJob()
@@ -119,11 +127,11 @@ namespace UnityVoxelCommunityProject.Terrain
                     areaSquare = areaSquare,
                     seaLevel   = seaLevel,
 
-                    currentChunk = chunkData.blocks
+                    currentChunk = dataChunk.blocks
                 };
                 
                 var handle = regularGenerationJob.Schedule(totalBlocksCount - 1, batchParallelFor);
-                return regularChunkPostProcessJob.Schedule(handle);
+                return new Tuple<JobHandle, DataChunk>(regularChunkPostProcessJob.Schedule(handle), dataChunk);
             }
             #endregion
         }
@@ -149,7 +157,10 @@ namespace UnityVoxelCommunityProject.Terrain
             {
                 if (currentlyInGenerationMap.ContainsKey(localPosition))
                 {
-                    currentlyInGenerationMap[localPosition].Complete();
+                    var tuple = currentlyInGenerationMap[localPosition]; 
+                    tuple.Item1.Complete();
+                    tuple.Item2.ready = true;
+                    
                     currentlyInGenerationMap.Remove(localPosition);
                 }
             }
@@ -159,7 +170,9 @@ namespace UnityVoxelCommunityProject.Terrain
         {
             foreach (var keyValuePair in currentlyInGenerationMap)
             {
-                keyValuePair.Value.Complete();
+                var tuple = keyValuePair.Value;
+                tuple.Item1.Complete();
+                tuple.Item2.ready = true;
             }
             
             currentlyInGenerationMap.Clear();

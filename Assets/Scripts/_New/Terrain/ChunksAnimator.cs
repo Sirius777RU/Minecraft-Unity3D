@@ -10,6 +10,7 @@ namespace UnityVoxelCommunityProject.Terrain
         [Space][Range(1, 100)] public float speed = 1;
         public bool use = true;
         
+        private List<Chunk> removeFromAnimation = new List<Chunk>();
         private Queue<Tuple<float, Chunk>> animatedChunks = new Queue<Tuple<float, Chunk>>();
 
         public void Register(Chunk chunk)
@@ -20,6 +21,15 @@ namespace UnityVoxelCommunityProject.Terrain
             }
             
             animatedChunks.Enqueue(new Tuple<float, Chunk>(0f, chunk));
+        }
+
+        public void RemoveFromAnimation(Chunk chunk)
+        {
+            removeFromAnimation.Add(chunk);
+            
+            var temp = chunk.tf.position;
+            temp.y = curve[curve.length - 1].value;
+            chunk.tf.position = temp;
         }
 
         private void LateUpdate()
@@ -34,6 +44,11 @@ namespace UnityVoxelCommunityProject.Terrain
                 var time = tuple.Item1 + dt;
                 var chunk = tuple.Item2;
 
+                if (removeFromAnimation.Contains(chunk))
+                {
+                    continue;
+                }
+                
                 var temp = chunk.tf.position;
                 temp.y = curve.Evaluate(time);
                 chunk.tf.position = temp;
@@ -41,6 +56,8 @@ namespace UnityVoxelCommunityProject.Terrain
                 if(time < animationDuration)
                     animatedChunks.Enqueue(new Tuple<float, Chunk>(time, chunk));
             }
+            
+            removeFromAnimation.Clear();
         }
     }
 }

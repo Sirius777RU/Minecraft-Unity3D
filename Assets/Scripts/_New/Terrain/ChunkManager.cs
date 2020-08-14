@@ -22,7 +22,7 @@ namespace UnityVoxelCommunityProject.Terrain
         public int instantDistance;
         public GameObject chunkPrefab;
 
-        public WorldData worldData;
+        public DataWorld dataWorld;
         
         private List<Chunk> usedChunks = new List<Chunk>();
         private Queue<Chunk> chunksPool = new Queue<Chunk>();
@@ -94,6 +94,7 @@ namespace UnityVoxelCommunityProject.Terrain
                 
             for (int i = 0; i < usedChunks.Count; i++)
             {
+                usedChunks[i].FinishAllIfAny();
                 usedChunks[i].Local(true);
             }
 
@@ -199,6 +200,7 @@ namespace UnityVoxelCommunityProject.Terrain
                     chunksProcessing.Enqueue(chunk);
                 
                 usedChunksMap.Add(displayPosition + finalOffset, chunk);
+                usedChunks.Add(chunk);
             }
         }
 
@@ -243,15 +245,15 @@ namespace UnityVoxelCommunityProject.Terrain
             
         }
         
-        private void OnApplicationQuit()
+        private void OnDestroy()
         {
-            for (int i = 0; i < usedChunks.Count; i++)
+            /*for (int i = 0; i < usedChunks.Count; i++)
                 usedChunks[i].Dispose();
 
             for (int i = 0; i < chunksPool.Count; i++)
                 chunksPool.Dequeue().Dispose();
 
-            atlasMap.Dispose();
+            atlasMap.Dispose();*/
         }
 
         #region UsefulButNotCheapFunctions
@@ -282,7 +284,7 @@ namespace UnityVoxelCommunityProject.Terrain
             chunkPosition.x += initialOffset;
             chunkPosition.y += initialOffset;
             
-            return worldData.chunks[chunkPosition].blocks[i];
+            return dataWorld.chunks[chunkPosition].blocks[i];
         }
         
 
@@ -315,7 +317,7 @@ namespace UnityVoxelCommunityProject.Terrain
             blockPosition.z = blockPosition.z >= 0 ? ((blockPosition.z % width + width) % width) : ((blockPosition.z % width + width) % width);
             
             int i = blockPosition.x + blockPosition.z * width + blockPosition.y * widthSqr;
-            worldData.chunks[chunkPosition].blocks[i] = block;
+            dataWorld.chunks[chunkPosition].blocks[i] = block;
 
             if (usedChunksMap.ContainsKey(chunkPosition))
             {

@@ -53,6 +53,7 @@ namespace UnityVoxelCommunityProject.Terrain
             mesh = new Mesh();
             mesh.MarkDynamic();
             meshFilter.mesh = mesh;
+            meshCollider.sharedMesh = mesh;
             meshCollider.cookingOptions = MeshColliderCookingOptions.None;
 
             width  = SettingsHolder.Instance.proceduralGeneration.chunkWidth;
@@ -62,6 +63,7 @@ namespace UnityVoxelCommunityProject.Terrain
             meshFilter.mesh.bounds = new Bounds(new Vector3((width + 2)/2, (height + 2)/2, (width + 2)/2) - new Vector3(1f, 0, 1f), 
                                                 new Vector3((width + 2), (height + 2), (width + 2)));
             meshRenderer.enabled = false;
+            meshCollider.enabled = false;
             gameObject.SetActive(false);
         }
 
@@ -78,7 +80,15 @@ namespace UnityVoxelCommunityProject.Terrain
         public void FreeThisChunk()
         {
             meshRenderer.enabled = false;
+            meshCollider.enabled = false;
 
+            FinishAllIfAny();
+
+            gameObject.SetActive(false);
+        }
+
+        public void FinishAllIfAny()
+        {
             if (currentStage == ChunkProcessing.TerrainDataGeneration)
             {
                 GrabChunksData();
@@ -88,11 +98,8 @@ namespace UnityVoxelCommunityProject.Terrain
                 meshGeneration.Complete();
             }
             
+            ChunksAnimator.Instance.RemoveFromAnimation(this);
             currentStage = ChunkProcessing.NotStarted;
-            
-            
-            
-            gameObject.SetActive(false);
         }
 
         public void Local(bool instant)
@@ -132,10 +139,21 @@ namespace UnityVoxelCommunityProject.Terrain
                                                              vertices, normals, triangles, uv); 
             
             //Then cause physics to update. That's not cheap, but out of other options here.
-            if(ChunkManager.Instance.updateColliders)
-                meshCollider.sharedMesh = mesh;
+            //if(ChunkManager.Instance.updateColliders)
+              //  meshCollider.sharedMesh = mesh;
             
             meshRenderer.enabled = true;
+            if (ChunkManager.Instance.updateColliders)
+            {
+                if (meshCollider.enabled)
+                {
+                    meshCollider.sharedMesh = mesh;
+                }
+                else
+                {
+                    meshCollider.enabled = true;
+                }
+            }
         }
 
         private void Processing()
@@ -178,6 +196,9 @@ namespace UnityVoxelCommunityProject.Terrain
                         meshCollider.sharedMesh = mesh;
 
                     meshRenderer.enabled = true;
+                    if(ChunkManager.Instance.updateColliders)
+                        meshCollider.enabled = true;
+                    
                     ChunksAnimator.Instance.Register(this);
                 }
 
@@ -220,11 +241,16 @@ namespace UnityVoxelCommunityProject.Terrain
         {
             TerrainProceduralGeneration.Instance.Complete(chunkPosition, withNeighbors: true);
 
-            currentChunk = ChunkManager.Instance.worldData.chunks[chunkPosition].blocks;
-            rightChunk   = ChunkManager.Instance.worldData.chunks[chunkPosition + new int2(1, 0)].blocks;
-            leftChunk    = ChunkManager.Instance.worldData.chunks[chunkPosition + new int2(-1, 0)].blocks;
-            frontChunk   = ChunkManager.Instance.worldData.chunks[chunkPosition + new int2(0, 1)].blocks;
-            backChunk    = ChunkManager.Instance.worldData.chunks[chunkPosition + new int2(0, -1)].blocks;
+            currentChunk = ChunkManager.Instance.dataWorld.chunks[chunkPosition].blocks;
+            rightChunk   = ChunkManager.Instance.dataWorld.chunks[chunkPosition + new int2(1, 0)].blocks;
+            leftChunk    = ChunkManager.Instance.dataWorld.chunks[chunkPosition + new int2(-1, 0)].blocks;
+            frontChunk   = ChunkManager.Instance.dataWorld.chunks[chunkPosition + new int2(0, 1)].blocks;
+            backChunk    = ChunkManager.Instance.dataWorld.chunks[chunkPosition + new int2(0, -1)].blocks;
+        }
+
+        private void OnDestroy()
+        {
+            Dispose();
         }
 
         public void Dispose()

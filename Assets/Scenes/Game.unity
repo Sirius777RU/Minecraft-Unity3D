@@ -3225,7 +3225,7 @@ GameObject:
   - component: {fileID: 813272108}
   - component: {fileID: 813272106}
   m_Layer: 0
-  m_Name: Old
+  m_Name: OldSSRT settings
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -6650,7 +6650,7 @@ Transform:
   - {fileID: 705507995}
   - {fileID: 1640440407}
   m_Father: {fileID: 0}
-  m_RootOrder: 5
+  m_RootOrder: 4
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1598316103
 GameObject:
@@ -7785,7 +7785,7 @@ GameObject:
   m_Component:
   - component: {fileID: 2132771643}
   m_Layer: 0
-  m_Name: StartPosition
+  m_Name: OldStartPosition
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -7803,7 +7803,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
-  m_RootOrder: 4
+  m_RootOrder: 5
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &2134654779
 GameObject:
