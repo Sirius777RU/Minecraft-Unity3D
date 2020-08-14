@@ -50,7 +50,7 @@ MeshRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 7692409391342487142}
   m_Enabled: 1
-  m_CastShadows: 2
+  m_CastShadows: 1
   m_ReceiveShadows: 1
   m_DynamicOccludee: 0
   m_MotionVectors: 1
@@ -115,3 +115,4 @@ MonoBehaviour:
   currentStage: 0
   framesInCurrentProcessingStage: 0
   readyForNextStage: 0
+  tf: {fileID: 0}

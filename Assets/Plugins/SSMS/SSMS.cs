@@ -150,7 +150,7 @@ namespace SSMS
         #region Private Members
 
         [SerializeField, HideInInspector]
-        Shader _shader;
+        Shader _shader = null;
 
         Material _material;
 

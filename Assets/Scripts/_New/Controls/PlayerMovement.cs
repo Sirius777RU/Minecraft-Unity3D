@@ -48,12 +48,7 @@ namespace UnityVoxelCommunityProject.General.Controls
         
         private void Start()
         {
-            tf = GetComponent<Transform>();
-            controller = GetComponent<CharacterController>();
-            
             Initialize();
-            var temp = tf.position;
-            temp.y = SettingsHolder.Instance.proceduralGeneration.chunkHeight;
         }
 
         private void Update()
@@ -81,11 +76,26 @@ namespace UnityVoxelCommunityProject.General.Controls
 
         private void Initialize()
         {
+            tf = GetComponent<Transform>();
+            controller = GetComponent<CharacterController>();
+            
             finalRayLength = settings.rayLength + controller.center.y;
             chunkWidth = SettingsHolder.Instance.proceduralGeneration.chunkWidth;
             
             playerChunkPosition = new int2(Mathf.FloorToInt(tf.position.x / chunkWidth),
                                            Mathf.FloorToInt(tf.position.z / chunkWidth));
+        }
+
+        public void Landing()
+        {
+            var temp   = tf.position;
+            float height = SettingsHolder.Instance.proceduralGeneration.chunkHeight;
+            RaycastHit hit;
+            if (Physics.Raycast(new Ray(new Vector3(temp.x, height+1, temp.z), Vector3.down), out hit, height*2))
+            {
+                temp = hit.point + new Vector3(0, 2, 0);
+                tf.position = temp;
+            }
         }
 
         private void CheckIfGrounded()
@@ -195,7 +205,7 @@ namespace UnityVoxelCommunityProject.General.Controls
             }
         }
 
-        protected virtual void ApplyMovement()
+        private void ApplyMovement()
         {
             if(!freeze)
                 controller.Move(finalMoveVector * dt);

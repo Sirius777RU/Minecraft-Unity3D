@@ -17,8 +17,7 @@ namespace UnityVoxelCommunityProject.Terrain
         private MeshFilter meshFilter;
         private MeshRenderer meshRenderer;
         private MeshCollider meshCollider;
-        private Transform tf;
-        
+
         private NativeList<float3> vertices;
         private NativeList<float3> normals;
         private NativeList<int>    triangles;
@@ -36,6 +35,7 @@ namespace UnityVoxelCommunityProject.Terrain
         [HideInInspector] public ChunkProcessing currentStage = ChunkProcessing.NotStarted;
         [HideInInspector] public int framesInCurrentProcessingStage = 0;
         [HideInInspector] public bool readyForNextStage = false;
+        [HideInInspector] public Transform tf;
         
         
         public void Initialize(int blocksCount)
@@ -59,7 +59,8 @@ namespace UnityVoxelCommunityProject.Terrain
             height = SettingsHolder.Instance.proceduralGeneration.chunkHeight;
             widthSqr = width * width;
             
-            meshFilter.mesh.bounds = new Bounds(new Vector3((width + 2)/2, (height + 2)/2, (width + 2)/2), new Vector3((width + 2), (height + 2), (width + 2)));
+            meshFilter.mesh.bounds = new Bounds(new Vector3((width + 2)/2, (height + 2)/2, (width + 2)/2) - new Vector3(1f, 0, 1f), 
+                                                new Vector3((width + 2), (height + 2), (width + 2)));
             meshRenderer.enabled = false;
             gameObject.SetActive(false);
         }
@@ -139,7 +140,6 @@ namespace UnityVoxelCommunityProject.Terrain
 
         private void Processing()
         {
-
             if (readyForNextStage)
             {
                 if (currentStage == ChunkProcessing.NotStarted)
@@ -178,6 +178,7 @@ namespace UnityVoxelCommunityProject.Terrain
                         meshCollider.sharedMesh = mesh;
 
                     meshRenderer.enabled = true;
+                    ChunksAnimator.Instance.Register(this);
                 }
 
                 readyForNextStage = false;

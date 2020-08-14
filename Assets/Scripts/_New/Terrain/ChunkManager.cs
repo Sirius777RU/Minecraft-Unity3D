@@ -55,7 +55,8 @@ namespace UnityVoxelCommunityProject.Terrain
 
             FillPool();
             Local();
-            //StartCoroutine(WaitTillNextFrameToDoLocal());
+            
+            PlayerMovement.Instance.Landing();
         }
 
         private void Update()
