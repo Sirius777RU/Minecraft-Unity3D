@@ -6,6 +6,7 @@ namespace UnityVoxelCommunityProject.General
 {
     public class GameTimeSystem : Singleton<GameTimeSystem>
     {
+        [Range(1, 1024)] public int everyFrames = 1;  
         public DeltaTimeMode deltaTimeMode = DeltaTimeMode.deltaTime;
         public float         speed         = 1;
         public SkySphere     skySphere;
@@ -13,6 +14,8 @@ namespace UnityVoxelCommunityProject.General
         public static float time           = 1;
         public static int   daysSinceStart = 0;
 
+        private float dtSum = 0;
+        
         private void Start()
         {
             time      = skySphere.currentTime;
@@ -24,6 +27,13 @@ namespace UnityVoxelCommunityProject.General
                 return;
 
             float dt = GetDeltaTime(deltaTimeMode);
+            dtSum += dt;
+            
+            if(Time.frameCount % everyFrames != 0)
+                return;
+
+            dt = dtSum;
+            dtSum = 0;
 
             time += (speed * 0.01f) * dt;
             if (time > 1f)

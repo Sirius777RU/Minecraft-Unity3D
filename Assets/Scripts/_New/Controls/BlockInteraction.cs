@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using Unity.Mathematics;
 using UnityEngine;
 using UnityVoxelCommunityProject.Terrain;
+using UnityVoxelCommunityProject.Utility;
 
 namespace UnityVoxelCommunityProject.General.Controls
 {
@@ -26,12 +27,14 @@ namespace UnityVoxelCommunityProject.General.Controls
 
         private float currentCooldownTime = 0;
         private float currentWaitTime = 0;
+        private int height;
     
         public void Initialize()
         {
             tf = GetComponent<Transform>();
             player = PlayerMovement.Instance.tf;
             mainCamera = MouseLook.Instance.tf;
+            height = SettingsHolder.Instance.proceduralGeneration.chunkHeight;
         }
 
         private void Update()
@@ -84,8 +87,7 @@ namespace UnityVoxelCommunityProject.General.Controls
                                                  Mathf.FloorToInt(blockPoint.z + 1));
                         
                         currentBlock = ChunkManager.Instance.GetBlockAtPosition(blockPosition);
-                        
-                        if (currentBlock != Block.Core && currentBlock != Block.Air && currentBlock != Block.Water)
+                        if (currentBlock != Block.Air && currentBlock != Block.Water)
                         {
                             currentCooldownTime = 0;
                             ChunkManager.Instance.SetBlockAtPosition(blockPosition, Block.Air);
@@ -98,9 +100,8 @@ namespace UnityVoxelCommunityProject.General.Controls
                                                  Mathf.FloorToInt(blockPoint.y + 1),
                                                  Mathf.FloorToInt(blockPoint.z + 1));
                         
-                        currentBlock = ChunkManager.Instance.GetBlockAtPosition(blockPosition);
                         
-                        if(currentBlock == Block.Air || currentBlock == Block.Water)
+                        if(CheckIfPlaceable(blockPosition))
                         {
                             currentCooldownTime = 0;
                             ChunkManager.Instance.SetBlockAtPosition(blockPosition, currentSetBlock);
@@ -112,16 +113,59 @@ namespace UnityVoxelCommunityProject.General.Controls
                 blockPoint = (new Vector3(Mathf.FloorToInt(blockPoint.x),
                                           Mathf.FloorToInt(blockPoint.y),
                                           Mathf.FloorToInt(blockPoint.z)) + Vector3.one / 2);
-                
-                Debug.DrawLine(PlacementPreview.position, blockPoint, Color.green);
-                PlacementPreview.LookAt(blockPoint);
-                PlacementPreview.Rotate(new Vector3(0, 180, 0));
+
+                if (Vector3.Distance(PlacementPreview.position, blockPoint) <= 1)
+                {
+                    Debug.DrawLine(PlacementPreview.position, blockPoint, Color.green);
+                    PlacementPreview.LookAt(blockPoint);
+                    PlacementPreview.Rotate(new Vector3(0, 180, 0));
+                }
             }
             else
             {
                 tf.position = Vector3.down * 1000;
             }
         }
-    }
 
+        private bool CheckIfPlaceable(int3 position)
+        {
+            var currentBlock = ChunkManager.Instance.GetBlockAtPosition(position);
+            if(currentBlock != Block.Air && currentBlock != Block.Water)
+                return false;
+
+            currentBlock = ChunkManager.Instance.GetBlockAtPosition(position + new int3(1, 0, 0));
+            if(currentBlock != Block.Air && currentBlock != Block.Water)
+                return true;
+            
+            currentBlock = ChunkManager.Instance.GetBlockAtPosition(position + new int3(-1, 0, 0));
+            if(currentBlock != Block.Air && currentBlock != Block.Water)
+                return true;
+                
+            currentBlock = ChunkManager.Instance.GetBlockAtPosition(position + new int3(0, 0, 1));
+            if(currentBlock != Block.Air && currentBlock != Block.Water)
+                return true;
+            
+            currentBlock = ChunkManager.Instance.GetBlockAtPosition(position + new int3(0, 0, -1));
+            if(currentBlock != Block.Air && currentBlock != Block.Water)
+                return true;
+
+            if (position.y < height)
+            {
+                currentBlock = ChunkManager.Instance.GetBlockAtPosition(position + new int3(0, 1, 0));
+                if(currentBlock != Block.Air && currentBlock != Block.Water)
+                    return true;
+            }
+
+            if (position.y > 0)
+            {
+                currentBlock = ChunkManager.Instance.GetBlockAtPosition(position + new int3(0, -1, 0));
+                if(currentBlock != Block.Air && currentBlock != Block.Water)
+                    return true;
+            }
+
+
+            return false;
+        }
+
+    }
 }

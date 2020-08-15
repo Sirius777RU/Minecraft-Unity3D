@@ -239,6 +239,9 @@ namespace UnityVoxelCommunityProject.Terrain
 
         private void GrabChunksData()
         {
+            if(TerrainProceduralGeneration.Instance == null)
+                return;
+                
             TerrainProceduralGeneration.Instance.Complete(chunkPosition, withNeighbors: true);
 
             currentChunk = ChunkManager.Instance.dataWorld.chunks[chunkPosition].blocks;

@@ -20,7 +20,7 @@ float isDithered(float2 pos, float alpha) {
         16.0 / 17.0,  8.0 / 17.0, 14.0 / 17.0,  6.0 / 17.0
     };
 
-    int index = (int(pos.x) % 4) * 4 + int(pos.y) % 4;
+    uint index = (uint(pos.x) % 4) * 4 + uint(pos.y) % 4;
     return alpha - DITHER_THRESHOLDS[index];
 }
 

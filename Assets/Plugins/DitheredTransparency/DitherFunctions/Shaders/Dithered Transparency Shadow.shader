@@ -35,7 +35,7 @@ Shader "Hidden/Dithered Transparent/Shadow"
             {
                 v2f o;
                 o.pos = UnityObjectToClipPos(v.vertex);
-                o.spos = (0, 0); 
+                o.spos = float4(0, 0, 0, 0); 
                 o.uv = TRANSFORM_TEX(v.texcoord, _MainTex);
 
                 return o;

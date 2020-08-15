@@ -27,7 +27,6 @@
         #pragma surface surf Translucent alphatest:_Cutout addshadow fullforwardshadows nometa noforwardadd 
         #pragma target 3.0
         
-        #include "UnityCG.cginc"
 
         sampler2D _MainTex, _Thickness, _Emission; 
 
