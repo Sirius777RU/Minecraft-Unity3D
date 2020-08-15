@@ -87,7 +87,7 @@ namespace UnityVoxelCommunityProject.General.Controls
                                                  Mathf.FloorToInt(blockPoint.z + 1));
                         
                         currentBlock = ChunkManager.Instance.GetBlockAtPosition(blockPosition);
-                        if (currentBlock != Block.Air && currentBlock != Block.Water)
+                        if (currentBlock != Block.Air && currentBlock != Block.Water && currentBlock != Block.Core)
                         {
                             currentCooldownTime = 0;
                             ChunkManager.Instance.SetBlockAtPosition(blockPosition, Block.Air);
