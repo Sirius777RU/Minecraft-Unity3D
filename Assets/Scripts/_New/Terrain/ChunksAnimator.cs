@@ -26,6 +26,11 @@ namespace UnityVoxelCommunityProject.Terrain
         public void RemoveFromAnimation(Chunk chunk)
         {
             removeFromAnimation.Add(chunk);
+
+            if (curve == null)
+            {
+                return;
+            }
             
             var temp = chunk.tf.position;
             temp.y = curve[curve.length - 1].value;

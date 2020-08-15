@@ -94,7 +94,7 @@ namespace UnityVoxelCommunityProject.Terrain
                 
             for (int i = 0; i < usedChunks.Count; i++)
             {
-                usedChunks[i].FinishAllIfAny();
+                usedChunks[i].CompleteAllIfAny();
                 usedChunks[i].Local(true);
             }
 
@@ -245,8 +245,9 @@ namespace UnityVoxelCommunityProject.Terrain
             
         }
         
-        private void OnDestroy()
+        protected override void OnDestroy()
         {
+            base.OnDestroy();
             /*for (int i = 0; i < usedChunks.Count; i++)
                 usedChunks[i].Dispose();
 

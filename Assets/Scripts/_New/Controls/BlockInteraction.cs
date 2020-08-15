@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using Unity.Mathematics;
 using UnityEngine;
@@ -11,6 +12,7 @@ namespace UnityVoxelCommunityProject.General.Controls
         public Block currentSetBlock = Block.Dirt ;
         
         public LayerMask collideWith;
+        public Transform PlacementPreview;
         public float maxDistance = 8;
         public float deepenRaycastPoint = 0.2f;
         
@@ -66,14 +68,14 @@ namespace UnityVoxelCommunityProject.General.Controls
                 tf.position = new Vector3(Mathf.FloorToInt(selectionPoint.x), 
                                           Mathf.FloorToInt(selectionPoint.y), 
                                           Mathf.FloorToInt(selectionPoint.z));
+                
+                Vector3 blockPoint;
+                int3    blockPosition;
+                Block   currentBlock;
 
                 if(currentCooldownTime >= actionCooldown &&
                    (leftClick || rightClick))
                 {
-                    Vector3 blockPoint;
-                    int3 blockPosition;
-                    Block currentBlock;
-
                     if (leftClick)
                     {
                         blockPoint = hitInfo.point + mainCamera.forward * deepenRaycastPoint;
@@ -105,6 +107,15 @@ namespace UnityVoxelCommunityProject.General.Controls
                         }
                     }
                 }
+                
+                blockPoint = hitInfo.point - mainCamera.forward * deepenRaycastPoint;
+                blockPoint = (new Vector3(Mathf.FloorToInt(blockPoint.x),
+                                          Mathf.FloorToInt(blockPoint.y),
+                                          Mathf.FloorToInt(blockPoint.z)) + Vector3.one / 2);
+                
+                Debug.DrawLine(PlacementPreview.position, blockPoint, Color.green);
+                PlacementPreview.LookAt(blockPoint);
+                PlacementPreview.Rotate(new Vector3(0, 180, 0));
             }
             else
             {

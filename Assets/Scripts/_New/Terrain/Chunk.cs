@@ -82,12 +82,12 @@ namespace UnityVoxelCommunityProject.Terrain
             meshRenderer.enabled = false;
             meshCollider.enabled = false;
 
-            FinishAllIfAny();
+            CompleteAllIfAny();
 
             gameObject.SetActive(false);
         }
 
-        public void FinishAllIfAny()
+        public void CompleteAllIfAny()
         {
             if (currentStage == ChunkProcessing.TerrainDataGeneration)
             {
@@ -97,8 +97,8 @@ namespace UnityVoxelCommunityProject.Terrain
             {
                 meshGeneration.Complete();
             }
-            
-            ChunksAnimator.Instance.RemoveFromAnimation(this);
+
+            if (ChunksAnimator.Instance != null) ChunksAnimator.Instance.RemoveFromAnimation(this);
             currentStage = ChunkProcessing.NotStarted;
         }
 
@@ -250,6 +250,7 @@ namespace UnityVoxelCommunityProject.Terrain
 
         private void OnDestroy()
         {
+            CompleteAllIfAny();
             Dispose();
         }
 
