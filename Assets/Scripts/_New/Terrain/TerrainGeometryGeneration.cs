@@ -393,7 +393,7 @@ namespace UnityVoxelCommunityProject.Terrain
             private bool Opaque(Block current, Block target)
             {
                 if (target == Block.Air || target == Block.Water ||
-                    target == Block.Leaves && current != Block.Leaves)
+                    target == Block.Leaves)
                 {
                     return false;
                 }

@@ -5,7 +5,6 @@
         _MainTex ("Color (RGB) Alpha (A)", 2D) = "white" {}
         _Cutout("Cutout", Range(0,1)) = .95               
         _Thickness ("Thickness", 2D) = "bump" {}
-        _Lighting ("_Lighting", 2D) = "white" {}
         
         _Emission ("Emission", 2D) = "black" {}     
         
@@ -27,7 +26,7 @@
         #pragma target 3.0
         
 
-        sampler2D _MainTex, _Thickness, _Emission, _Lighting; 
+        sampler2D _MainTex, _Thickness, _Emission; 
 
         struct Input
         {

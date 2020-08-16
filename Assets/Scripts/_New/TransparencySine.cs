@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -26,6 +27,13 @@ namespace UnityVoxelCommunityProject.Utility
             
             var color = material.GetColor(id);
             color.a = curve.Evaluate(progress);
+            material.SetColor(id, color);
+        }
+
+        private void OnDisable()
+        {
+            var color = material.GetColor(id);
+            color.a = curve.Evaluate(1);
             material.SetColor(id, color);
         }
     }
