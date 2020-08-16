@@ -1,14 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
-using Unity.Burst;
+using UnityEngine;
+using Unity.Mathematics;
 using Unity.Collections;
 using Unity.Jobs;
-using Unity.Mathematics;
-using UnityEngine;
-using UnityVoxelCommunityProject.Serialization;
-using UnityVoxelCommunityProject.Terrain.ProceduralGeneration;
+
 using UnityVoxelCommunityProject.Utility;
-using Random = Unity.Mathematics.Random;
+using UnityVoxelCommunityProject.Terrain.ProceduralGeneration;
 
 namespace UnityVoxelCommunityProject.Terrain
 {
@@ -33,7 +31,7 @@ namespace UnityVoxelCommunityProject.Terrain
                 {
                     var tuple = currentlyInGenerationMap[chunkPosition];
                     tuple.Item1.Complete();
-                    tuple.Item2.ready = true;
+                    tuple.Item2.isReady = true;
                     
                     currentlyInGenerationMap.Remove(chunkPosition);
                 }
@@ -54,7 +52,7 @@ namespace UnityVoxelCommunityProject.Terrain
                     {
                         var tuple = currentlyInGenerationMap[position];
                         tuple.Item1.Complete();
-                        tuple.Item2.ready = true;
+                        tuple.Item2.isReady = true;
                         
                         currentlyInGenerationMap.Remove(position);
                         continue;
@@ -74,7 +72,9 @@ namespace UnityVoxelCommunityProject.Terrain
         {
             DataChunk dataChunk = new DataChunk()
             {
-                blocks = new NativeArray<Block>(ChunkManager.Instance.blocksPerChunk, Allocator.Persistent)
+                isReady = false,
+                blocks   = new NativeArray<Block>(ChunkManager.Instance.blocksPerChunk, Allocator.Persistent),
+                lighting = new NativeArray<byte> (ChunkManager.Instance.blocksPerChunk, Allocator.Persistent)
             };
 
             ChunkManager.Instance.dataWorld.chunks.Add(chunkPosition, dataChunk);
@@ -159,7 +159,7 @@ namespace UnityVoxelCommunityProject.Terrain
                 {
                     var tuple = currentlyInGenerationMap[localPosition]; 
                     tuple.Item1.Complete();
-                    tuple.Item2.ready = true;
+                    tuple.Item2.isReady = true;
                     
                     currentlyInGenerationMap.Remove(localPosition);
                 }
@@ -171,8 +171,9 @@ namespace UnityVoxelCommunityProject.Terrain
             foreach (var keyValuePair in currentlyInGenerationMap)
             {
                 var tuple = keyValuePair.Value;
+                
                 tuple.Item1.Complete();
-                tuple.Item2.ready = true;
+                tuple.Item2.isReady = true;
             }
             
             currentlyInGenerationMap.Clear();

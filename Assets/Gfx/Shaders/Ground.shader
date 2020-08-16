@@ -3,10 +3,9 @@
     Properties
     {
         _MainTex ("Color (RGB) Alpha (A)", 2D) = "white" {}
-        //_Glossiness ("Smoothness", Range(0,1)) = 0.5
-        //_Metallic ("Metallic", Range(0,1)) = 0.0
         _Cutout("Cutout", Range(0,1)) = .95               
         _Thickness ("Thickness", 2D) = "bump" {}
+        _Lighting ("_Lighting", 2D) = "white" {}
         
         _Emission ("Emission", 2D) = "black" {}     
         
@@ -28,27 +27,41 @@
         #pragma target 3.0
         
 
-        sampler2D _MainTex, _Thickness, _Emission; 
+        sampler2D _MainTex, _Thickness, _Emission, _Lighting; 
 
         struct Input
         {
             float2 uv_MainTex;
+            float3 worldPos   : TEXCOORD1;
+            float4 vertColor  : COLOR;
         };
+        
+        struct SurfaceOutputCustom
+         {
+             fixed3 Albedo;
+             fixed3 Emission;
+             fixed3 Normal;
+             fixed4 Lighting;
+             fixed Thick;
+             fixed Alpha;
+             fixed3 posWorld;
+         };
 
         fixed4 _SubColor;
         float _Scale, _Power, _Distortion, _EmissionStrength;
 
-        void surf (Input IN, inout SurfaceOutput o)
+        void surf (Input IN, inout SurfaceOutputCustom o)
         {
             // Albedo comes from a texture tinted by color
             fixed4 c = tex2D (_MainTex, IN.uv_MainTex);
             o.Albedo = c.rgb;
-            o.Gloss = tex2D(_Thickness, IN.uv_MainTex).r;
+            o.Thick = tex2D(_Thickness, IN.uv_MainTex).r;
             o.Emission = c.rgb * (tex2D(_Emission, IN.uv_MainTex));
+            o.Lighting = IN.vertColor; 
             o.Alpha = c.a;
         }
         
-        inline float4 LightingTranslucent (SurfaceOutput s, fixed3 lightDir, fixed3 viewDir, fixed atten)
+        inline float4 LightingTranslucent (SurfaceOutputCustom s, fixed3 lightDir, fixed3 viewDir, fixed atten)
 		{
 			viewDir = normalize ( viewDir );
 			lightDir = normalize ( lightDir );
@@ -63,15 +76,16 @@
 			half3 h = (lightDir + viewDir);
 			fixed diff = max (0, dot (s.Normal, lightDir));
 			float nh = max (0, dot (s.Normal, h));
+			
 			fixed3 diffAlbedo = (s.Albedo * _LightColor0.rgb * diff + _LightColor0.rgb * _SpecColor.rgb) * (atten * 2);
-
-            float thick = s.Gloss;
+            //fixed3 diffAlbedo = s.Albedo * s.Lighting; 
+            
+            float thick = s.Thick;
 
 			// Add the two together.
 			float4 c;
 			c.rgb = diffAlbedo + (transAlbedo * thick) + (s.Emission * _EmissionStrength);
-			c.a = _LightColor0.a * atten;
-			
+			c.a = _LightColor0.a * atten;			
 			
 			return c;
 		}

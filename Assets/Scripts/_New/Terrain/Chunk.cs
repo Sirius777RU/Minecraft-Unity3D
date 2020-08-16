@@ -1,10 +1,8 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
+﻿using UnityEngine;
 using Unity.Collections;
-using Unity.Jobs;
 using Unity.Mathematics;
-using UnityEngine;
+using Unity.Jobs;
+
 using UnityVoxelCommunityProject.Utility;
 
 namespace UnityVoxelCommunityProject.Terrain
@@ -14,23 +12,24 @@ namespace UnityVoxelCommunityProject.Terrain
     [RequireComponent(typeof(MeshRenderer))]
     public class Chunk : MonoBehaviour
     {
-        private MeshFilter meshFilter;
+        private MeshFilter   meshFilter;
         private MeshRenderer meshRenderer;
         private MeshCollider meshCollider;
 
         private NativeList<float3> vertices;
         private NativeList<float3> normals;
+        private NativeList<float4> colors;
         private NativeList<int>    triangles;
         private NativeList<float2> uv;
 
         [HideInInspector] public int2 chunkPosition;
-        private int3 volumeStart, volumeEnd;
         private int width, height, widthSqr;
-
         private Mesh mesh;
-        private JobHandle meshGeneration;   
         
-        [ReadOnly] private NativeArray<Block> currentChunk, rightChunk, leftChunk, backChunk, frontChunk;
+        private JobHandle meshGenerationJobHandle;
+        [ReadOnly] private NativeArray<Block> currentChunk, 
+                                              rightChunk, leftChunk, 
+                                              backChunk,  frontChunk;
         
         [HideInInspector] public ChunkProcessing currentStage = ChunkProcessing.NotStarted;
         [HideInInspector] public int framesInCurrentProcessingStage = 0;
@@ -40,10 +39,11 @@ namespace UnityVoxelCommunityProject.Terrain
         
         public void Initialize(int blocksCount)
         {
-            vertices  = new NativeList<float3>(10000, Allocator.Persistent);
-            normals   = new NativeList<float3>(10000, Allocator.Persistent);
-            triangles = new NativeList<int>(15000, Allocator.Persistent); 
-            uv        = new NativeList<float2>(10000, Allocator.Persistent);
+            vertices  = new NativeList<float3>(8000, Allocator.Persistent);
+            normals   = new NativeList<float3>(8000, Allocator.Persistent);
+            colors    = new NativeList<float4>(8000, Allocator.Persistent);
+            triangles = new NativeList<int>   (12000, Allocator.Persistent); 
+            uv        = new NativeList<float2>(8000, Allocator.Persistent);
 
             tf = GetComponent<Transform>();
             meshFilter   = GetComponent<MeshFilter>();
@@ -52,6 +52,7 @@ namespace UnityVoxelCommunityProject.Terrain
 
             mesh = new Mesh();
             mesh.MarkDynamic();
+            
             meshFilter.mesh = mesh;
             meshCollider.sharedMesh = mesh;
             meshCollider.cookingOptions = MeshColliderCookingOptions.None;
@@ -61,7 +62,7 @@ namespace UnityVoxelCommunityProject.Terrain
             widthSqr = width * width;
             
             meshFilter.mesh.bounds = new Bounds(new Vector3((width + 2)/2, (height + 2)/2, (width + 2)/2) - new Vector3(1f, 0, 1f), 
-                                                new Vector3((width + 2), (height + 2), (width + 2)));
+                                                new Vector3((width + 2),   (height + 2),   (width + 2)));
             meshRenderer.enabled = false;
             meshCollider.enabled = false;
             gameObject.SetActive(false);
@@ -83,22 +84,24 @@ namespace UnityVoxelCommunityProject.Terrain
             meshCollider.enabled = false;
 
             CompleteAllIfAny();
-
+            
             gameObject.SetActive(false);
         }
 
         public void CompleteAllIfAny()
         {
+            if(currentStage == ChunkProcessing.NotStarted)
+                return;
+            
             if (currentStage == ChunkProcessing.TerrainDataGeneration)
-            {
                 GrabChunksData();
-            }
+            
             if (currentStage == ChunkProcessing.MeshDataGeneration)
-            {
-                meshGeneration.Complete();
-            }
+                meshGenerationJobHandle.Complete();
 
-            if (ChunksAnimator.Instance != null) ChunksAnimator.Instance.RemoveFromAnimation(this);
+            if (ChunksAnimator.Instance != null) 
+                ChunksAnimator.Instance.RemoveFromAnimation(this);
+            
             currentStage = ChunkProcessing.NotStarted;
         }
 
@@ -119,86 +122,82 @@ namespace UnityVoxelCommunityProject.Terrain
 
         private void InstantDisplay()
         {
+            var generationData = TerrainProceduralGeneration.Instance;
+            var generationMesh = TerrainGeometryGeneration.Instance;
+            
             //Generate chunk with neighbors.
-            TerrainProceduralGeneration.Instance.RequestChunkGeneration(chunkPosition, true);
+            generationData.RequestChunkGeneration(chunkPosition, true);
             
             //Grab the result.
             GrabChunksData();
             
             //And use all data it to display mesh;
-            TerrainGeometryGeneration.Instance.GenerateGeometry(mesh,
-                                                                currentChunk, rightChunk, leftChunk,
-                                                                frontChunk,
-                                                                backChunk,
-                                                                vertices, normals, triangles, uv).Schedule().Complete(); 
+            generationMesh.GenerateGeometry(mesh, currentChunk, 
+                                            rightChunk, leftChunk,
+                                            frontChunk, backChunk,
+                                            vertices, normals, colors, triangles, uv).Schedule().Complete(); 
             
-            TerrainGeometryGeneration.Instance.ApplyGeometry(mesh,
-                                                             currentChunk, rightChunk, leftChunk,
-                                                             frontChunk,
-                                                             backChunk,
-                                                             vertices, normals, triangles, uv); 
-            
+            generationMesh.ApplyGeometry(mesh, currentChunk, 
+                                         rightChunk, leftChunk,
+                                         frontChunk, backChunk,
+                                         vertices, normals, colors, triangles, uv);
+
             //Then cause physics to update. That's not cheap, but out of other options here.
-            //if(ChunkManager.Instance.updateColliders)
-              //  meshCollider.sharedMesh = mesh;
-            
-            meshRenderer.enabled = true;
             if (ChunkManager.Instance.updateColliders)
             {
                 if (meshCollider.enabled)
-                {
                     meshCollider.sharedMesh = mesh;
-                }
                 else
-                {
                     meshCollider.enabled = true;
-                }
             }
+            
+            meshRenderer.enabled = true;
         }
 
         private void Processing()
         {
             if (readyForNextStage)
             {
+                var generationData = TerrainProceduralGeneration.Instance;
+                var generationMesh = TerrainGeometryGeneration.Instance;
+                
+                
                 if (currentStage == ChunkProcessing.NotStarted)
                 {
                     currentStage                   = ChunkProcessing.TerrainDataGeneration;
                     framesInCurrentProcessingStage = 0;
 
-                    TerrainProceduralGeneration.Instance.RequestChunkGeneration(chunkPosition,
-                                                                                withNeighbors: true);
+                    generationData.RequestChunkGeneration(chunkPosition,
+                                                          withNeighbors: true);
                 }
                 else if (currentStage == ChunkProcessing.TerrainDataGeneration)
                 {
                     currentStage = ChunkProcessing.MeshDataGeneration;
-
                     GrabChunksData();
-                    meshGeneration = TerrainGeometryGeneration.Instance.GenerateGeometry(mesh,
-                                                                                         currentChunk, rightChunk,
-                                                                                         leftChunk,
-                                                                                         frontChunk,
-                                                                                         backChunk,
-                                                                                         vertices, normals, triangles,
-                                                                                         uv).Schedule();
+                    
+                    meshGenerationJobHandle = generationMesh.GenerateGeometry(mesh, currentChunk,
+                                                                              rightChunk, leftChunk,
+                                                                              frontChunk, backChunk,
+                                                                              vertices, normals, colors, triangles, uv)
+                                                            .Schedule();
                 }
                 else if (currentStage == ChunkProcessing.MeshDataGeneration)
                 {
                     currentStage = ChunkProcessing.Finished;
-                    meshGeneration.Complete();
-
-                    TerrainGeometryGeneration.Instance.ApplyGeometry(mesh,
-                                                                     currentChunk, rightChunk, leftChunk,
-                                                                     frontChunk,
-                                                                     backChunk,
-                                                                     vertices, normals, triangles, uv);
+                    
+                    meshGenerationJobHandle.Complete();
+                    generationMesh.ApplyGeometry(mesh, currentChunk,
+                                                 rightChunk, leftChunk,
+                                                 frontChunk, backChunk,
+                                                 vertices, normals, colors, triangles, uv);
 
                     if (ChunkManager.Instance.updateColliders)
                         meshCollider.sharedMesh = mesh;
-
-                    meshRenderer.enabled = true;
+                    
                     if(ChunkManager.Instance.updateColliders)
                         meshCollider.enabled = true;
                     
+                    meshRenderer.enabled = true;
                     ChunksAnimator.Instance.Register(this);
                 }
 
@@ -214,27 +213,17 @@ namespace UnityVoxelCommunityProject.Terrain
 
             //Add custom offset.
             int  initialOffset = ChunkManager.Instance.initialOffset;
-            int2 offset        = new int2(initialOffset, initialOffset);
+            int2 offset = new int2(initialOffset, initialOffset);
             
             chunkPosition = new int2(x + offset.x, z + offset.y);
-
         }
 
         private void SetPosition(int2 position)
         {
             int  initialOffset = ChunkManager.Instance.initialOffset;
-            int2 offset        = new int2(initialOffset, initialOffset);
+            int2 offset = new int2(initialOffset, initialOffset);
             
             chunkPosition = new int2(position.x + offset.x, position.y + offset.y);
-        }
-
-        private void RecalculateVolume()
-        {
-            int2 from = (chunkPosition * width);
-            int2 to   = (chunkPosition * width) + new int2(width, width);
-            
-            volumeStart = new int3(from.x, 0, from.y);
-            volumeEnd   = new int3(to.x, height, to.y);
         }
 
         private void GrabChunksData()
@@ -261,6 +250,7 @@ namespace UnityVoxelCommunityProject.Terrain
         {
             vertices.Dispose();
             normals.Dispose();
+            colors.Dispose();
             triangles.Dispose();
             uv.Dispose();
         }
@@ -269,7 +259,8 @@ namespace UnityVoxelCommunityProject.Terrain
     public enum ChunkProcessing
     {
         NotStarted,
-        TerrainDataGeneration, MeshDataGeneration,
+        TerrainDataGeneration, 
+        MeshDataGeneration,
         Finished
     }
 }

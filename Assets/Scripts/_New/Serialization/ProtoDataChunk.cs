@@ -14,7 +14,7 @@ namespace UnityVoxelCommunityProject
             return new DataChunk()
             {
                 blocks = new NativeArray<Block>(p.blocks, Allocator.Persistent),
-                ready = true
+                isReady = true
             };
         }
 

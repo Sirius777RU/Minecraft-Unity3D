@@ -1,11 +1,12 @@
 ﻿using System.Runtime.CompilerServices;
-using Unity.Burst;
-using Unity.Collections;
-using Unity.Collections.LowLevel.Unsafe;
-using Unity.Jobs;
-using Unity.Mathematics;
 using UnityEngine;
 using UnityEngine.Rendering;
+using Unity.Collections;
+using Unity.Collections.LowLevel.Unsafe;
+using Unity.Mathematics;
+using Unity.Burst;
+using Unity.Jobs;
+
 using UnityVoxelCommunityProject.Utility;
 
 namespace UnityVoxelCommunityProject.Terrain
@@ -21,6 +22,7 @@ namespace UnityVoxelCommunityProject.Terrain
                                    
                                                 NativeList<float3> vertices,
                                                 NativeList<float3> normals,
+                                                NativeList<float4> colors,
                                                 NativeList<int> triangles, NativeList<float2> uv)
         {
             mesh.name = "chunkMesh";
@@ -28,6 +30,7 @@ namespace UnityVoxelCommunityProject.Terrain
             vertices.Clear();
             triangles.Clear();
             normals.Clear();
+            colors.Clear();
             uv.Clear();
             
             return new GenerateMeshJob()
@@ -44,6 +47,7 @@ namespace UnityVoxelCommunityProject.Terrain
                 
                 vertices  = vertices,
                 normals   = normals,
+                colors    = colors,
                 triangles = triangles,
                 uv        = uv
             };
@@ -56,7 +60,9 @@ namespace UnityVoxelCommunityProject.Terrain
                                    
                                   NativeList<float3> vertices,
                                   NativeList<float3> normals,
-                                  NativeList<int> triangles, NativeList<float2> uv)
+                                  NativeList<float4> colors,
+                                  NativeList<int> triangles, 
+                                  NativeList<float2> uv)
         {
             var outputMeshDataArray = Mesh.AllocateWritableMeshData(1);
             var outputMeshData = outputMeshDataArray[0];
@@ -64,7 +70,8 @@ namespace UnityVoxelCommunityProject.Terrain
             outputMeshData.SetVertexBufferParams(vertices.Length,
                                              new VertexAttributeDescriptor(VertexAttribute.Position),
                                              new VertexAttributeDescriptor(VertexAttribute.Normal, stream: 1),
-                                             new VertexAttributeDescriptor(VertexAttribute.TexCoord0, stream: 2, dimension: 2));
+                                             new VertexAttributeDescriptor(VertexAttribute.Color,  stream: 2, dimension: 4),
+                                             new VertexAttributeDescriptor(VertexAttribute.TexCoord0, stream: 3, dimension: 2));
             
             var submeshDescriptor = new SubMeshDescriptor(0, triangles.Length, MeshTopology.Triangles);
             submeshDescriptor.firstVertex = 0;
@@ -82,6 +89,7 @@ namespace UnityVoxelCommunityProject.Terrain
 
                 vertices  = vertices,
                 normals   = normals,
+                colors    = colors, 
                 triangles = triangles,
                 uv        = uv
             };
@@ -111,6 +119,7 @@ namespace UnityVoxelCommunityProject.Terrain
             
             [WriteOnly] public NativeList<float3> vertices;
             [WriteOnly] public NativeList<float3> normals;
+            [WriteOnly] public NativeList<float4> colors;
             [WriteOnly] public NativeList<int>    triangles;
             [WriteOnly] public NativeList<float2> uv;
             
@@ -213,6 +222,11 @@ namespace UnityVoxelCommunityProject.Terrain
                             normals.Add(new float3(0, 1, 0));
                             normals.Add(new float3(0, 1, 0));
 
+                            colors.Add(new float4(1, 1, 1, 1));
+                            colors.Add(new float4(1, 1, 1, 1));
+                            colors.Add(new float4(1, 1, 1, 1));
+                            colors.Add(new float4(1, 1, 1, 1));
+                            
                             blockUV = atlasMap[(((int) current) * 3)];
                             uv.Add(new float2(blockUV.x / 16f + .001f, blockUV.y / 16f + .001f));
                             uv.Add(new float2(blockUV.x / 16f + .001f, (blockUV.y + 1) / 16f - .001f));
@@ -236,6 +250,11 @@ namespace UnityVoxelCommunityProject.Terrain
                             normals.Add(new float3(0, -1, 1));
                             normals.Add(new float3(0, -1, 1));
                             
+                            colors.Add(new float4(1, 1, 1, 1));
+                            colors.Add(new float4(1, 1, 1, 1));
+                            colors.Add(new float4(1, 1, 1, 1));
+                            colors.Add(new float4(1, 1, 1, 1));
+                            
                             blockUV = atlasMap[(((int) current) * 3) + 2];
                             uv.Add(new float2(blockUV.x / 16f + .001f, blockUV.y / 16f + .001f));
                             uv.Add(new float2(blockUV.x / 16f + .001f, (blockUV.y + 1) / 16f - .001f));
@@ -257,6 +276,11 @@ namespace UnityVoxelCommunityProject.Terrain
                             normals.Add(new float3(0, 0, -1));
                             normals.Add(new float3(0, 0, -1));
                             normals.Add(new float3(0, 0, -1));
+                            
+                            colors.Add(new float4(1, 1, 1, 1));
+                            colors.Add(new float4(1, 1, 1, 1));
+                            colors.Add(new float4(1, 1, 1, 1));
+                            colors.Add(new float4(1, 1, 1, 1));
 
                             blockUV = atlasMap[(((int) current) * 3) + 1];
                             uv.Add(new float2(blockUV.x / 16f + .001f, blockUV.y / 16f + .001f));
@@ -280,6 +304,11 @@ namespace UnityVoxelCommunityProject.Terrain
                             normals.Add(new float3(0, 0, 1));
                             normals.Add(new float3(0, 0, 1));
                             
+                            colors.Add(new float4(1, 1, 1, 1));
+                            colors.Add(new float4(1, 1, 1, 1));
+                            colors.Add(new float4(1, 1, 1, 1));
+                            colors.Add(new float4(1, 1, 1, 1));
+                            
                             blockUV = atlasMap[(((int) current) * 3) + 1];
                             uv.Add(new float2(blockUV.x / 16f + .001f, blockUV.y / 16f + .001f));
                             uv.Add(new float2(blockUV.x / 16f + .001f, (blockUV.y + 1) / 16f - .001f));
@@ -302,6 +331,11 @@ namespace UnityVoxelCommunityProject.Terrain
                             normals.Add(new float3(1, 0, 0));
                             normals.Add(new float3(1, 0, 0));
                             
+                            colors.Add(new float4(1, 1, 1, 1));
+                            colors.Add(new float4(1, 1, 1, 1));
+                            colors.Add(new float4(1, 1, 1, 1));
+                            colors.Add(new float4(1, 1, 1, 1));
+                            
                             blockUV = atlasMap[(((int) current) * 3) + 1];
                             uv.Add(new float2(blockUV.x / 16f + .001f, blockUV.y / 16f + .001f));
                             uv.Add(new float2(blockUV.x / 16f + .001f, (blockUV.y + 1) / 16f - .001f));
@@ -323,6 +357,11 @@ namespace UnityVoxelCommunityProject.Terrain
                             normals.Add(new float3(-1, 0, 0));
                             normals.Add(new float3(-1, 0, 0));
                             normals.Add(new float3(-1, 0, 0));
+                            
+                            colors.Add(new float4(1, 1, 1, 1));
+                            colors.Add(new float4(1, 1, 1, 1));
+                            colors.Add(new float4(1, 1, 1, 1));
+                            colors.Add(new float4(1, 1, 1, 1));
                             
                             blockUV = atlasMap[(((int) current) * 3) + 1];
                             uv.Add(new float2(blockUV.x / 16f + .001f, blockUV.y / 16f + .001f));
@@ -370,6 +409,7 @@ namespace UnityVoxelCommunityProject.Terrain
         {
             [ReadOnly] public NativeList<float3> vertices;
             [ReadOnly] public NativeList<float3> normals;
+            [ReadOnly] public NativeList<float4> colors;
             [ReadOnly] public NativeList<int>    triangles;
             [ReadOnly] public NativeList<float2> uv;
 
@@ -379,13 +419,15 @@ namespace UnityVoxelCommunityProject.Terrain
             {
                 var outputVerts   = outputMeshData.GetVertexData<float3>();
                 var outputNormals = outputMeshData.GetVertexData<float3>(1);
-                var outputUVs     = outputMeshData.GetVertexData<float2>(stream: 2);
+                var outputColors  = outputMeshData.GetVertexData<float4>(2);
+                var outputUVs     = outputMeshData.GetVertexData<float2>(3);
                 
                 var vCount = vertices.Length;
                 var tCount = triangles.Length;
 
                 outputVerts.CopyFrom(vertices);
                 outputNormals.CopyFrom(normals);
+                outputColors.CopyFrom(colors);
                 outputUVs.CopyFrom(uv);
                 
                 if (outputMeshData.indexFormat == IndexFormat.UInt16)

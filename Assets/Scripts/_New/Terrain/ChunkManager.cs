@@ -1,48 +1,48 @@
 ﻿using System;
-using System.Collections;
-using System.Collections.Generic;
 using System.Linq;
-using Unity.Collections;
+using System.Collections.Generic;
 using UnityEngine;
+using Unity.Collections;
 using Unity.Mathematics;
-using UnityVoxelCommunityProject.General;
-using UnityVoxelCommunityProject.General.Controls;
-using UnityVoxelCommunityProject.Serialization;
+
 using UnityVoxelCommunityProject.Utility;
+using UnityVoxelCommunityProject.General.Controls;
 
 namespace UnityVoxelCommunityProject.Terrain
 {
+    //TODO unload chunks if currently not displayed and not been used for a while. 
     public class ChunkManager : Singleton<ChunkManager>
     {
         public int framesPerStage = 3;
         public int maximumStageChangesPerFrame = 1;
         public int initialOffset = 128;
+        
         [Space(10)]
         public bool updateColliders = true;
-        public int instantDistance;
+        public int  instantDistance;
         public GameObject chunkPrefab;
 
         public DataWorld dataWorld;
         
-        private List<Chunk> usedChunks = new List<Chunk>();
+        private List<Chunk>  usedChunks = new List<Chunk>();
         private Queue<Chunk> chunksPool = new Queue<Chunk>();
         private Queue<Chunk> chunksProcessing = new Queue<Chunk>();
 
         private Dictionary<int2, Chunk> usedChunksMap = new Dictionary<int2, Chunk>();
+        public NativeArray<int2> atlasMap;
 
         [HideInInspector] public int blocksPerChunk;
+
         private Transform tf, playerTf;
-        
-        private CurrentGenerationSettings settings;
         private int width, height, widthSqr;
         private int2 lastPlayerPosition = new int2(Double.NegativeInfinity);
+        private CurrentGenerationSettings settings;
 
-        public NativeArray<int2> atlasMap;
-        
         public void Initialize()
         {
             tf = GetComponent<Transform>();
             playerTf = PlayerMovement.Instance.tf;
+            
             SettingsHolder.Instance.blockData.GrabUVMappingArray(out atlasMap, Allocator.Persistent);
             settings = SettingsHolder.Instance.proceduralGeneration;
 
@@ -64,9 +64,7 @@ namespace UnityVoxelCommunityProject.Terrain
             Local();
 
             if(Input.GetKeyDown(KeyCode.Alpha5))
-            {
                 UpdateChunks();
-            }
 
             int length = chunksProcessing.Count;
             for (int i = 0; i < length; i++)
@@ -78,11 +76,8 @@ namespace UnityVoxelCommunityProject.Terrain
                 if(chunk.currentStage == ChunkProcessing.Finished)
                     continue;
 
-                if (i < maximumStageChangesPerFrame &&
-                    chunk.framesInCurrentProcessingStage >= framesPerStage)
-                {
+                if (i < maximumStageChangesPerFrame && chunk.framesInCurrentProcessingStage >= framesPerStage)
                     chunk.readyForNextStage = true;
-                }
                 
                 chunksProcessing.Enqueue(chunk);
             }
@@ -90,22 +85,11 @@ namespace UnityVoxelCommunityProject.Terrain
 
         public void UpdateChunks()
         {
-            float time = Time.realtimeSinceStartup;
-                
             for (int i = 0; i < usedChunks.Count; i++)
             {
                 usedChunks[i].CompleteAllIfAny();
                 usedChunks[i].Local(true);
             }
-
-            Debug.Log($"Chunks rebuild took: {Time.realtimeSinceStartup - time}s");
-        }
-
-        private IEnumerator WaitTillNextFrameToDoLocal()
-        {
-            yield return WaitFor.Frames(1);
-
-            Local();
         }
 
         public void Local()
@@ -121,9 +105,8 @@ namespace UnityVoxelCommunityProject.Terrain
             int distance = SettingsHolder.Instance.displayOptions.chunkRenderDistance;
             ValidateChunks(distance);
             
-            DisplayChunks(instantDistance, true);
-            DisplayChunks(distance: distance, 
-                           instant: false);
+            DisplayChunks(instantDistance,    instant: true);
+            DisplayChunks(distance: distance, instant: false);
         }
 
         private void ValidateChunks(int renderDistance)
@@ -157,8 +140,8 @@ namespace UnityVoxelCommunityProject.Terrain
         private List<int2> chunksToDisplay = new List<int2>();
         private void DisplayChunks(int distance, bool instant)
         {
-            lastPlayerPosition = PlayerMovement.Instance.playerChunkPosition;
             chunksToDisplay.Clear();
+            lastPlayerPosition = PlayerMovement.Instance.playerChunkPosition;
             int2 finalOffset = new int2(initialOffset, initialOffset);
             
             if (distance <= 0)
@@ -248,16 +231,11 @@ namespace UnityVoxelCommunityProject.Terrain
         protected override void OnDestroy()
         {
             base.OnDestroy();
-            /*for (int i = 0; i < usedChunks.Count; i++)
-                usedChunks[i].Dispose();
-
-            for (int i = 0; i < chunksPool.Count; i++)
-                chunksPool.Dequeue().Dispose();
-
-            atlasMap.Dispose();*/
+            atlasMap.Dispose();
         }
 
         #region UsefulButNotCheapFunctions
+        
         //Use global block position to get block type.
         public Block GetBlockAtPosition(int3 blockPosition)
         {
@@ -266,13 +244,9 @@ namespace UnityVoxelCommunityProject.Terrain
             //Compatible with negative chunk positions.
             chunkPosition.x = Mathf.FloorToInt((0f + blockPosition.x) / width);
             chunkPosition.y = Mathf.FloorToInt((0f + blockPosition.z) / width);
-            //chunkPosition.x = Mathf.FloorToInt(blockPosition.x / width);
-            //chunkPosition.y = Mathf.FloorToInt( blockPosition.z / width);
             
-            blockPosition.x = blockPosition.x >= 0 ? ((blockPosition.x % width + width) % width) : ((blockPosition.x % width + width) % width);
-            blockPosition.z = blockPosition.z >= 0 ? ((blockPosition.z % width + width) % width) : ((blockPosition.z % width + width) % width);
-            //blockPosition.x = blockPosition.x % width;
-            //blockPosition.z = blockPosition.z % width;
+            blockPosition.x = (blockPosition.x % width + width) % width;
+            blockPosition.z = (blockPosition.z % width + width) % width;
 
             return GetBlockAtPosition(chunkPosition, blockPosition);
         }
@@ -288,13 +262,11 @@ namespace UnityVoxelCommunityProject.Terrain
             return dataWorld.chunks[chunkPosition].blocks[i];
         }
         
-
         //Get blocks in certain volume.
         public void GetBlocksVolume(int3 from, int3 to, NativeArray<Block> blocks)
         {
             int i = 0;
             
-            //Debug.Log($"Volume from {from} to {to}");
             for (int y = from.y; y < to.y; y++)
             for (int z = from.z; z < to.z; z++)
             for (int x = from.x; x < to.x; x++)
@@ -314,12 +286,14 @@ namespace UnityVoxelCommunityProject.Terrain
             chunkPosition.x += initialOffset;
             chunkPosition.y += initialOffset;
 
-            blockPosition.x = blockPosition.x >= 0 ? ((blockPosition.x % width + width) % width) : ((blockPosition.x % width + width) % width);
-            blockPosition.z = blockPosition.z >= 0 ? ((blockPosition.z % width + width) % width) : ((blockPosition.z % width + width) % width);
+            blockPosition.x = (blockPosition.x % width + width) % width;
+            blockPosition.z = (blockPosition.z % width + width) % width;
             
             int i = blockPosition.x + blockPosition.z * width + blockPosition.y * widthSqr;
+            
             dataWorld.chunks[chunkPosition].blocks[i] = block;
-
+            
+            //Update changed chunk and neighbors if needed.
             if (usedChunksMap.ContainsKey(chunkPosition))
             {
                 usedChunksMap[chunkPosition].Local(true);
