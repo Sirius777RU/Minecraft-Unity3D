@@ -12,7 +12,6 @@ namespace UnityVoxelCommunityProject.Terrain.ProceduralGeneration
             
         public float2 chunkPosition;
         public int    width, height;
-        public int    areaSquare;
         public int    seaLevel;
         
         private       int i, x, y, z;
@@ -21,9 +20,10 @@ namespace UnityVoxelCommunityProject.Terrain.ProceduralGeneration
         {
             i = index;
                 
-            y = i / (areaSquare);
-            i = i % (areaSquare);
-            z = i / width;
+            //(width * height * z) + (width * y) + x
+            z = i / (width * height);
+            i -= (width * height * z);
+            y = (i / width);
             x = i % width;
 
             if (y < 57)

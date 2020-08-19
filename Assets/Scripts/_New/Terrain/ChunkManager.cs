@@ -33,7 +33,7 @@ namespace UnityVoxelCommunityProject.Terrain
         [HideInInspector] public int blocksPerChunk;
 
         private Transform tf, playerTf;
-        private int width, height, widthSqr;
+        private int width, height;
         private int2 lastPlayerPosition = new int2(Double.NegativeInfinity);
         private CurrentGenerationSettings settings;
 
@@ -47,7 +47,6 @@ namespace UnityVoxelCommunityProject.Terrain
 
             width    = settings.chunkWidth;
             height   = settings.chunkHeight;
-            widthSqr = width * width;
             
             blocksPerChunk = (width) * (width) * 
                              height;
@@ -257,7 +256,7 @@ namespace UnityVoxelCommunityProject.Terrain
         //Use chunk and local block position to get block type.
         public Block GetBlockAtPosition(int2 chunkPosition, int3 blockPosition)
         {
-            int i = blockPosition.x + blockPosition.z * width + blockPosition.y * widthSqr;
+            int i = (width * height * blockPosition.z) + (width * blockPosition.y) + blockPosition.x;
             
             chunkPosition.x += initialOffset;
             chunkPosition.y += initialOffset;
@@ -291,9 +290,9 @@ namespace UnityVoxelCommunityProject.Terrain
 
             blockPosition.x = (blockPosition.x % width + width) % width;
             blockPosition.z = (blockPosition.z % width + width) % width;
-            
-            int i = blockPosition.x + blockPosition.z * width + blockPosition.y * widthSqr;
-            
+
+            int i = (width * height * blockPosition.z) + (width * blockPosition.y) + blockPosition.x;
+
             dataWorld.chunks[chunkPosition].blocks[i] = block;
             
             //Update changed chunk and neighbors if needed.

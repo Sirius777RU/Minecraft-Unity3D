@@ -26,7 +26,7 @@ namespace UnityVoxelCommunityProject.Terrain
         private void Start()
         {
             Shader.SetGlobalFloat("_MinimumLightIntensity", minimumLightValue);
-            stepsCount = 1/*000*/;
+            //stepsCount = 10000;
         }
 
         private void Update()
@@ -48,13 +48,13 @@ namespace UnityVoxelCommunityProject.Terrain
             
             if (Input.GetKeyDown(KeyCode.A))
             {
-                customLightPoint.x++;
+                customLightPoint.x--;
                 moved = true;
             }
             
             if (Input.GetKeyDown(KeyCode.D))
             {
-                customLightPoint.x--;
+                customLightPoint.x++;
                 moved = true;
             }
             
@@ -154,8 +154,8 @@ namespace UnityVoxelCommunityProject.Terrain
                 var arrowTarget = arrowPositions[i];
                 var created = Instantiate(arrowPrefab, transform) as GameObject;
 
-                created.transform.position = new Vector3(arrowPosition.x + 15.5f, arrowPosition.y - 1, arrowPosition.z + 15.5f);
-                created.transform.LookAt(new Vector3(arrowTarget.x + 15.5f, arrowTarget.y - 1, arrowTarget.z + 15.5f));
+                created.transform.position = new Vector3(arrowPosition.x + 7.5f, arrowPosition.y - 0.5f, arrowPosition.z + 7.5f);
+                created.transform.LookAt(new Vector3(arrowTarget.x + 7.5f, arrowTarget.y - 0.5f, arrowTarget.z + 7.5f));
                 
                 arrowsGO.Add(created);
             }
@@ -166,7 +166,7 @@ namespace UnityVoxelCommunityProject.Terrain
                 var dotPosition = dots[i];
                 var created = Instantiate(dotPrefab, transform) as GameObject;
                 
-                created.transform.position = new Vector3(dotPosition.x + 15.5f, dotPosition.y - 1, dotPosition.z + 15.5f);
+                created.transform.position = new Vector3(dotPosition.x + 7.5f, dotPosition.y - 1, dotPosition.z + 7.5f);
                 if(i == length - 1) created.transform.localScale = new Vector3(4, 1, 4);
                 
                 dotGO.Add(created);
@@ -208,7 +208,7 @@ namespace UnityVoxelCommunityProject.Terrain
             public void Execute()
             {
                 currentSteps = 0;
-                lWidth = width * width;
+                lWidth = width * 2;
                 minWidth = (width / 2);
                 
                 currentLighting.MemClear();
@@ -237,14 +237,14 @@ namespace UnityVoxelCommunityProject.Terrain
                     var lIndex = GetIndex(position, true);
                     currentLighting[lIndex] = intensity;
 
-                    #region NoveAround
+                    #region MoveAround
                     direction = new int3(-1, 0, 0);
                     localPosition  = position + direction;
                     localIntensity = intensity;
                     while (localPosition.x > minWidth && localIntensity > lightDegradation)
                     {
-                        if (currentSteps >= stepsCount)
-                            return;
+                        //if (currentSteps >= stepsCount)
+                        //    return;
                         
                         if (!MoveAndSpread())
                             break;
@@ -255,8 +255,8 @@ namespace UnityVoxelCommunityProject.Terrain
                     localIntensity = intensity;
                     while (localPosition.x < lWidth - 1 && localIntensity > lightDegradation)
                     {
-                        if (currentSteps >= stepsCount)
-                            return;
+                        //if (currentSteps >= stepsCount)
+                        //    return;
                         
                         if (!MoveAndSpread())
                             break;
@@ -267,8 +267,8 @@ namespace UnityVoxelCommunityProject.Terrain
                     localIntensity = intensity;
                     while (localPosition.z > minWidth && localIntensity > lightDegradation)
                     {
-                        if (currentSteps >= stepsCount)
-                            return;
+                        //if (currentSteps >= stepsCount)
+                        //    return;
                         
                         if (!MoveAndSpread())
                             break;
@@ -279,8 +279,8 @@ namespace UnityVoxelCommunityProject.Terrain
                     localIntensity = intensity;
                     while (localPosition.z < lWidth - 1 && localIntensity > lightDegradation)
                     {
-                        if (currentSteps >= stepsCount)
-                            return;
+                        //if (currentSteps >= stepsCount)
+                        //    return;
                         
                         if (!MoveAndSpread())
                             break;
@@ -291,8 +291,8 @@ namespace UnityVoxelCommunityProject.Terrain
                     localIntensity = intensity;
                     while (localPosition.y > 0 && localIntensity > lightDegradation)
                     {
-                        if (currentSteps >= stepsCount)
-                            return;
+                        //if (currentSteps >= stepsCount)
+                        //    return;
                         
                         if (!MoveAndSpread())
                             break;
@@ -303,8 +303,8 @@ namespace UnityVoxelCommunityProject.Terrain
                     localIntensity = intensity;
                     while (localPosition.y < height - 1 && localIntensity > lightDegradation)
                     {
-                        if (currentSteps >= stepsCount)
-                            return;
+                        //if (currentSteps >= stepsCount)
+                        //    return;
                         
                         if (!MoveAndSpread())
                             break;
@@ -384,7 +384,7 @@ namespace UnityVoxelCommunityProject.Terrain
             private void TryToSpread(int3 spreadDirection)
             {
                 spreadDirection += localPosition;
-                
+
                 var index = GetIndex(spreadDirection);
                 var lIndex = GetIndex(spreadDirection, true);
                 var lightAtDirection = currentLighting[lIndex];
@@ -399,6 +399,9 @@ namespace UnityVoxelCommunityProject.Terrain
                     counter++;
 
                     currentLighting[lIndex] = 5;
+                    
+                    //arrows.Add(spreadDirection);
+                    //arrowPositions.Add(localPosition);
                 }
             }
             
@@ -468,11 +471,11 @@ namespace UnityVoxelCommunityProject.Terrain
             {
                 if (forLight)
                 {
-                    return ((position.x) + (position.z) * lWidth + (position.y) * (height));
+                    return (lWidth * height * position.z) + (lWidth * position.y) + position.x;
                 }
                 else
                 {
-                    return (position.x - minWidth) + (position.z - minWidth) * width + position.y * widthSqr;
+                    return (width * height * (position.z - minWidth)) + (width * position.y) + (position.x - minWidth);
                 }
             }
             

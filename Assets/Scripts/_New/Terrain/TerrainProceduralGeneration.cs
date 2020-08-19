@@ -82,7 +82,6 @@ namespace UnityVoxelCommunityProject.Terrain
             int height = SettingsHolder.Instance.proceduralGeneration.chunkHeight;
             int seaLevel = SettingsHolder.Instance.proceduralGeneration.seaLevel;
             
-            int areaSquare       = width * width;
             int totalBlocksCount = (width * width) * height;
 
             float time = Time.realtimeSinceStartup;
@@ -96,7 +95,6 @@ namespace UnityVoxelCommunityProject.Terrain
 
                     width      = width,
                     height     = height,
-                    areaSquare = areaSquare,
                     seaLevel   = seaLevel,
 
                     currentChunk = dataChunk.blocks
@@ -111,7 +109,6 @@ namespace UnityVoxelCommunityProject.Terrain
 
                     width      = width,
                     height     = height,
-                    areaSquare = areaSquare,
                     seaLevel   = seaLevel,
 
                     currentChunk = dataChunk.blocks
@@ -123,7 +120,6 @@ namespace UnityVoxelCommunityProject.Terrain
                     
                     width      = width,
                     height     = height,
-                    areaSquare = areaSquare,
                     seaLevel   = seaLevel,
 
                     currentChunk = dataChunk.blocks

@@ -1,4 +1,5 @@
-﻿using System.Runtime.CompilerServices;
+﻿using System;
+using System.Runtime.CompilerServices;
 using UnityEngine;
 using UnityEngine.Rendering;
 using Unity.Collections;
@@ -133,7 +134,7 @@ namespace UnityVoxelCommunityProject.Terrain
             public unsafe void Execute()
             {
                 int vCount = 0;
-                lWidth = width * width;
+                lWidth = width * 2;
                 minWidth = (width / 2);
                 
                 for (int y = 0; y < height; y++)
@@ -142,9 +143,8 @@ namespace UnityVoxelCommunityProject.Terrain
                 {
                     int index = 0;
                     int lIndex = 0;
-                    int widthSqr = width * width;
 
-                    index = x + z * width + y * widthSqr;
+                    index = (width * height * z) + (width * y) + x;
                     Block current = currentChunk[index];
                     Block top     = Block.Air;
                     Block bottom  = Block.Air;
@@ -161,10 +161,10 @@ namespace UnityVoxelCommunityProject.Terrain
                     {
                         if (y < (height - 1))
                         {
-                            index = x + z * width + (y + 1) * widthSqr;
+                            index = (width * height * z) + (width * (y + 1)) + x;
                             top   = currentChunk[index];
 
-                            lIndex = (x + minWidth) + (z + minWidth) * lWidth + (y + 1) * (height);
+                            lIndex = (lWidth * height * (z + minWidth)) + (lWidth * (y + 1)) + (x + minWidth);
                             lightTop = lightingData[lIndex];
                         }
 
@@ -175,67 +175,68 @@ namespace UnityVoxelCommunityProject.Terrain
                         }
                         else
                         {
-                            index  = x + z * width + (y - 1) * widthSqr;
+                            index  = (width * height * z) + (width * (y - 1)) + x;
                             bottom = currentChunk[index];
-                            
-                            lIndex = (x + minWidth) + (z + minWidth) * lWidth + (y - 1) * height;
+
+                            lIndex = 0;
+                            lIndex = (lWidth * height * (z + minWidth)) + (lWidth * (y - 1)) + (x + minWidth);
                             lightBottom = lightingData[lIndex];
                         }
 
                         if (z > 0)
                         {
-                            index = x + (z - 1) * width + y * widthSqr;
+                            index = (width * height * (z - 1)) + (width * y) + x;
                             back = currentChunk[index];
                         }
                         else
                         {
-                            index = x + (width - 1) * width + y * widthSqr;
+                            index = (width * height * (width - 1)) + (width * y) + x;
                             back  = backChunk[index];
                         }
 
                         if (z < (width - 1))
                         {
-                            index = x + (z + 1) * width + y * widthSqr;
+                            index = (width * height * (z + 1)) + (width * y) + x;
                             front  = currentChunk[index];
                         }
                         else
                         {
-                            index = x + (0) * width + y * widthSqr;
+                            index = (width * height * (0)) + (width * y) + x;
                             front = frontChunk[index];
                         }
                         
                         if (x > 0)
                         {
-                            index = (x - 1) + z * width + y * widthSqr;
+                            index = (width * height * z) + (width * y) + (x - 1);
                             left  = currentChunk[index];
                         }
                         else
                         {
-                            index = (width - 1) + z * width + y * widthSqr;
+                            index = (width * height * z) + (width * y) + (width - 1);
                             left = leftChunk[index];
                         }
 
                         if (x < (width - 1))
                         {
-                            index = (x + 1) + z * width + y * widthSqr;
+                            index = (width * height * z) + (width * y) + (x + 1);
                             right = currentChunk[index];
                         }
                         else
                         {
-                            index = (0) + z * width + y * widthSqr;
+                            index = (width * height * z) + (width * y) + (0);
                             right = rightChunk[index];
                         }
 
-                        lIndex    = (x + minWidth) + ((z - 1) + minWidth) * lWidth + (y) * height;
+                        lIndex = (lWidth * height * ((z - 1) + minWidth)) + (lWidth * y) + (x + minWidth);
                         lightBack = lightingData[lIndex];
 
-                        lIndex     = (x + minWidth) + ((z + 1) + minWidth) * lWidth + (y) * height;
+                        lIndex = (lWidth * height * ((z + 1) + minWidth)) + (lWidth * y) + (x + minWidth);
                         lightFront = lightingData[lIndex];
 
-                        lIndex    = ((x - 1) + minWidth) + (z + minWidth) * lWidth + (y) * height;
+                        lIndex = (lWidth * height * (z + minWidth)) + (lWidth * y) + ((x - 1) + minWidth);
                         lightLeft = lightingData[lIndex];
 
-                        lIndex     = ((x + 1) + minWidth) + (z + minWidth) * lWidth + (y) * height;
+                        lIndex = (lWidth * height * (z + minWidth)) + (lWidth * y) + ((x + 1) + minWidth);
                         lightRight = lightingData[lIndex];
                         
                         float3 blockPos = new float3(x - 1, y - 1, z - 1);
