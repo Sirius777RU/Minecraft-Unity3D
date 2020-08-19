@@ -19,7 +19,6 @@ namespace UnityVoxelCommunityProject.Terrain
         
         [Space(10)]
         public bool updateColliders = true;
-        public int  instantDistance;
         public GameObject chunkPrefab;
 
         public DataWorld dataWorld;
@@ -63,7 +62,8 @@ namespace UnityVoxelCommunityProject.Terrain
         {
             Local();
 
-            if(Input.GetKeyDown(KeyCode.Alpha5))
+            if(Input.GetKeyDown(KeyCode.Alpha5) || 
+               (Input.GetKey(KeyCode.Alpha5) && (Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift))))
                 UpdateChunks();
 
             int length = chunksProcessing.Count;
@@ -102,11 +102,14 @@ namespace UnityVoxelCommunityProject.Terrain
                 return;
             }
             
-            int distance = SettingsHolder.Instance.displayOptions.chunkRenderDistance;
+            int distance = SettingsHolder.Instance.displayOptions.renderDistance;
+            int instantDistance = SettingsHolder.Instance.displayOptions.instantDistance;
             ValidateChunks(distance);
             
             DisplayChunks(instantDistance,    instant: true);
-            DisplayChunks(distance: distance, instant: false);
+            
+            if(distance > 0)
+                DisplayChunks(distance: distance, instant: false);
         }
 
         private void ValidateChunks(int renderDistance)
@@ -200,7 +203,7 @@ namespace UnityVoxelCommunityProject.Terrain
 
         private void FillPool(int count = 0)
         {
-            int renderDistance = SettingsHolder.Instance.displayOptions.chunkRenderDistance;
+            int renderDistance = SettingsHolder.Instance.displayOptions.renderDistance;
 
             if (count == 0)
             {

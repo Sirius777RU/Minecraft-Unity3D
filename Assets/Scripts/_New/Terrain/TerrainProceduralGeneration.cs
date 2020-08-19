@@ -73,8 +73,7 @@ namespace UnityVoxelCommunityProject.Terrain
             DataChunk dataChunk = new DataChunk()
             {
                 isReady = false,
-                blocks   = new NativeArray<Block>(ChunkManager.Instance.blocksPerChunk, Allocator.Persistent),
-                lighting = new NativeArray<byte> (ChunkManager.Instance.blocksPerChunk, Allocator.Persistent)
+                blocks   = new NativeArray<Block>(ChunkManager.Instance.blocksPerChunk, Allocator.Persistent)
             };
 
             ChunkManager.Instance.dataWorld.chunks.Add(chunkPosition, dataChunk);

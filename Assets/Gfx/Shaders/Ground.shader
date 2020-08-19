@@ -25,7 +25,7 @@
         #pragma surface surf Translucent alphatest:_Cutout addshadow fullforwardshadows nometa noforwardadd 
         #pragma target 3.0
         
-
+        float _MinimumLightIntensity;
         sampler2D _MainTex, _Thickness, _Emission; 
 
         struct Input
@@ -56,7 +56,7 @@
             o.Albedo = c.rgb;
             o.Thick = tex2D(_Thickness, IN.uv_MainTex).r;
             o.Emission = c.rgb * (tex2D(_Emission, IN.uv_MainTex));
-            o.Lighting = IN.vertColor; 
+            o.Lighting = IN.vertColor.a; 
             o.Alpha = c.a;
         }
         
@@ -76,10 +76,20 @@
 			fixed diff = max (0, dot (s.Normal, lightDir));
 			float nh = max (0, dot (s.Normal, h));
 			
-			fixed3 diffAlbedo = (s.Albedo * _LightColor0.rgb * diff + _LightColor0.rgb * _SpecColor.rgb) * (atten * 2);
-            //fixed3 diffAlbedo = s.Albedo * s.Lighting; 
+			//float lighting = clamp(s.Lighting / 20, _MinimumLightIntensity, 2);			
+			//fixed3 diffAlbedo = (((s.Albedo * _LightColor0.rgb * diff) * (atten * 2)));
+			
+			//diffAlbedo = (diffAlbedo + (s.Albedo * lighting)) / 2; 
+			
+			
+            //fixed3 blockAlbedo = s.Albedo * (clamp(s.Lighting / 20, _MinimumLightIntensity, 255));
             
-            float thick = s.Thick;
+            //diffAlbedo.r = min(diffAlbedo.r, blockAlbedo.r);
+            //diffAlbedo.g = min(diffAlbedo.g, blockAlbedo.g);
+            //diffAlbedo.b = min(diffAlbedo.b, blockAlbedo.b);
+            fixed3 diffAlbedo = s.Albedo * (clamp(s.Lighting / 40, _MinimumLightIntensity, 255));
+            
+            float thick = s.Thick; 
 
 			// Add the two together.
 			float4 c;

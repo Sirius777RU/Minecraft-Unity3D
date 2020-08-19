@@ -12,8 +12,9 @@ Shader "Dithered Transparent/Dithered From Texture"
 
     SubShader
     {
-        Tags{ "RenderType" = "Opaque" "Queue" = "Geometry" }
+        Tags{ "Queue"="Transparent" "IgnoreProjector"="True" "RenderType"="Transparent" }
         Cull off 
+        //Blend One OneMinusSrcAlpha
 
         Pass
         {            
@@ -47,12 +48,12 @@ Shader "Dithered Transparent/Dithered From Texture"
                 o.pos = UnityObjectToClipPos(v.vertex);
                 o.uv = TRANSFORM_TEX(v.texcoord, _MainTex);
 
-                float4 norm = mul(unity_ObjectToWorld, v.normal); 
-                float3 normalDirection = normalize(norm.xyz);
-                float4 AmbientLight = UNITY_LIGHTMODEL_AMBIENT;
-                float4 LightDirection = normalize(_WorldSpaceLightPos0);
-                float4 DiffuseLight = saturate(dot(LightDirection, -normalDirection))*_LightColor0;
-                o.col = float4(AmbientLight + DiffuseLight);
+                //float4 norm = mul(unity_ObjectToWorld, v.normal); 
+                //float3 normalDirection = normalize(norm.xyz);
+                //float4 AmbientLight = UNITY_LIGHTMODEL_AMBIENT;
+                //float4 LightDirection = normalize(_WorldSpaceLightPos0);
+                //float4 DiffuseLight = saturate(dot(LightDirection, -normalDirection))*_LightColor0;
+                o.col = float4(1, 1, 1, 1);
                 o.spos = ComputeScreenPos(o.pos);
 
                 return o;

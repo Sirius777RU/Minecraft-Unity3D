@@ -37,6 +37,7 @@ namespace UnityVoxelCommunityProject.Terrain
             chunk.tf.position = temp;
         }
 
+        private Tuple<float, Chunk> tuple;
         private void LateUpdate()
         {
             float dt = (Time.deltaTime * speed);
@@ -45,7 +46,7 @@ namespace UnityVoxelCommunityProject.Terrain
             
             for (int i = 0; i < length; i++)
             {
-                var tuple = animatedChunks.Dequeue();
+                tuple = animatedChunks.Dequeue();
                 var time = tuple.Item1 + dt;
                 var chunk = tuple.Item2;
 

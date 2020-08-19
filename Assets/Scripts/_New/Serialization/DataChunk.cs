@@ -1,4 +1,7 @@
-﻿using Unity.Collections;
+﻿using System;
+using System.Collections.Generic;
+using Unity.Collections;
+using Unity.Mathematics;
 using UnityVoxelCommunityProject.Terrain;
 
 namespace UnityVoxelCommunityProject
@@ -7,8 +10,7 @@ namespace UnityVoxelCommunityProject
     public class DataChunk
     {
         public NativeArray<Block> blocks;
-        public NativeArray<byte> lighting;
-        
+
         public bool isReady;
     }
 }

@@ -1,5 +1,8 @@
-﻿using ProtoBuf;
+﻿using System;
+using System.Collections.Generic;
+using ProtoBuf;
 using Unity.Collections;
+using Unity.Mathematics;
 using UnityVoxelCommunityProject.Terrain;
 
 namespace UnityVoxelCommunityProject
@@ -14,7 +17,6 @@ namespace UnityVoxelCommunityProject
             return new DataChunk()
             {
                 blocks = new NativeArray<Block>(p.blocks, Allocator.Persistent),
-                lighting = new NativeArray<byte>(p.blocks.Length, Allocator.Persistent),
                 isReady = true
             };
         }

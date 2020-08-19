@@ -19,7 +19,8 @@ namespace UnityVoxelCommunityProject.Terrain
                                                 NativeArray<Block> currentChunk,
                                                 NativeArray<Block> rightChunk, NativeArray<Block> leftChunk,
                                                 NativeArray<Block> frontChunk, NativeArray<Block> backChunk,
-                                   
+                                                NativeArray<byte>  lightingData,
+
                                                 NativeList<float3> vertices,
                                                 NativeList<float3> normals,
                                                 NativeList<float4> colors,
@@ -41,6 +42,7 @@ namespace UnityVoxelCommunityProject.Terrain
                 rightChunk = rightChunk, backChunk = backChunk,
                 
                 atlasMap = ChunkManager.Instance.atlasMap,
+                lightingData = lightingData,
                 
                 width  = SettingsHolder.Instance.proceduralGeneration.chunkWidth,
                 height = SettingsHolder.Instance.proceduralGeneration.chunkHeight,
@@ -113,6 +115,8 @@ namespace UnityVoxelCommunityProject.Terrain
         {
             [ReadOnly] public NativeArray<Block> currentChunk, 
                                                  leftChunk, rightChunk, frontChunk, backChunk;
+
+            [ReadOnly] public NativeArray<byte> lightingData;
             
             [NativeDisableContainerSafetyRestriction][ReadOnly] public NativeArray<int2> atlasMap;
             public int width, height;
@@ -122,16 +126,22 @@ namespace UnityVoxelCommunityProject.Terrain
             [WriteOnly] public NativeList<float4> colors;
             [WriteOnly] public NativeList<int>    triangles;
             [WriteOnly] public NativeList<float2> uv;
+
+            private int minWidth;
+            private int lWidth;
             
             public unsafe void Execute()
             {
                 int vCount = 0;
+                lWidth = width * width;
+                minWidth = (width / 2);
                 
                 for (int y = 0; y < height; y++)
                 for (int z = 0; z < width; z++)
                 for (int x = 0; x < width; x++)
                 {
                     int index = 0;
+                    int lIndex = 0;
                     int widthSqr = width * width;
 
                     index = x + z * width + y * widthSqr;
@@ -143,12 +153,19 @@ namespace UnityVoxelCommunityProject.Terrain
                     Block left    = Block.Air;
                     Block right   = Block.Air;
                     
+                    float lightTop   = 0f, lightBottom = 0f,
+                          lightLeft  = 0f, lightRight  = 0f,
+                          lightFront = 0f, lightBack   = 0f;
+                    
                     if (current != Block.Air)
                     {
                         if (y < (height - 1))
                         {
                             index = x + z * width + (y + 1) * widthSqr;
                             top   = currentChunk[index];
+
+                            lIndex = (x + minWidth) + (z + minWidth) * lWidth + (y + 1) * (height);
+                            lightTop = lightingData[lIndex];
                         }
 
                         //There is no need to draw bottom of chunk - it's should be always invisible.
@@ -160,6 +177,9 @@ namespace UnityVoxelCommunityProject.Terrain
                         {
                             index  = x + z * width + (y - 1) * widthSqr;
                             bottom = currentChunk[index];
+                            
+                            lIndex = (x + minWidth) + (z + minWidth) * lWidth + (y - 1) * height;
+                            lightBottom = lightingData[lIndex];
                         }
 
                         if (z > 0)
@@ -172,7 +192,7 @@ namespace UnityVoxelCommunityProject.Terrain
                             index = x + (width - 1) * width + y * widthSqr;
                             back  = backChunk[index];
                         }
-                        
+
                         if (z < (width - 1))
                         {
                             index = x + (z + 1) * width + y * widthSqr;
@@ -205,6 +225,18 @@ namespace UnityVoxelCommunityProject.Terrain
                             index = (0) + z * width + y * widthSqr;
                             right = rightChunk[index];
                         }
+
+                        lIndex    = (x + minWidth) + ((z - 1) + minWidth) * lWidth + (y) * height;
+                        lightBack = lightingData[lIndex];
+
+                        lIndex     = (x + minWidth) + ((z + 1) + minWidth) * lWidth + (y) * height;
+                        lightFront = lightingData[lIndex];
+
+                        lIndex    = ((x - 1) + minWidth) + (z + minWidth) * lWidth + (y) * height;
+                        lightLeft = lightingData[lIndex];
+
+                        lIndex     = ((x + 1) + minWidth) + (z + minWidth) * lWidth + (y) * height;
+                        lightRight = lightingData[lIndex];
                         
                         float3 blockPos = new float3(x - 1, y - 1, z - 1);
                         float2 blockUV;
@@ -222,10 +254,10 @@ namespace UnityVoxelCommunityProject.Terrain
                             normals.Add(new float3(0, 1, 0));
                             normals.Add(new float3(0, 1, 0));
 
-                            colors.Add(new float4(1, 1, 1, 1));
-                            colors.Add(new float4(1, 1, 1, 1));
-                            colors.Add(new float4(1, 1, 1, 1));
-                            colors.Add(new float4(1, 1, 1, 1));
+                            colors.Add(new float4(1, 1, 1, lightTop));
+                            colors.Add(new float4(1, 1, 1, lightTop));
+                            colors.Add(new float4(1, 1, 1, lightTop));
+                            colors.Add(new float4(1, 1, 1, lightTop));
                             
                             blockUV = atlasMap[(((int) current) * 3)];
                             uv.Add(new float2(blockUV.x / 16f + .001f, blockUV.y / 16f + .001f));
@@ -250,10 +282,10 @@ namespace UnityVoxelCommunityProject.Terrain
                             normals.Add(new float3(0, -1, 1));
                             normals.Add(new float3(0, -1, 1));
                             
-                            colors.Add(new float4(1, 1, 1, 1));
-                            colors.Add(new float4(1, 1, 1, 1));
-                            colors.Add(new float4(1, 1, 1, 1));
-                            colors.Add(new float4(1, 1, 1, 1));
+                            colors.Add(new float4(1, 1, 1, lightBottom));
+                            colors.Add(new float4(1, 1, 1, lightBottom));
+                            colors.Add(new float4(1, 1, 1, lightBottom));
+                            colors.Add(new float4(1, 1, 1, lightBottom));
                             
                             blockUV = atlasMap[(((int) current) * 3) + 2];
                             uv.Add(new float2(blockUV.x / 16f + .001f, blockUV.y / 16f + .001f));
@@ -277,10 +309,10 @@ namespace UnityVoxelCommunityProject.Terrain
                             normals.Add(new float3(0, 0, -1));
                             normals.Add(new float3(0, 0, -1));
                             
-                            colors.Add(new float4(1, 1, 1, 1));
-                            colors.Add(new float4(1, 1, 1, 1));
-                            colors.Add(new float4(1, 1, 1, 1));
-                            colors.Add(new float4(1, 1, 1, 1));
+                            colors.Add(new float4(1, 1, 1, lightBack));
+                            colors.Add(new float4(1, 1, 1, lightBack));
+                            colors.Add(new float4(1, 1, 1, lightBack));
+                            colors.Add(new float4(1, 1, 1, lightBack));
 
                             blockUV = atlasMap[(((int) current) * 3) + 1];
                             uv.Add(new float2(blockUV.x / 16f + .001f, blockUV.y / 16f + .001f));
@@ -304,10 +336,10 @@ namespace UnityVoxelCommunityProject.Terrain
                             normals.Add(new float3(0, 0, 1));
                             normals.Add(new float3(0, 0, 1));
                             
-                            colors.Add(new float4(1, 1, 1, 1));
-                            colors.Add(new float4(1, 1, 1, 1));
-                            colors.Add(new float4(1, 1, 1, 1));
-                            colors.Add(new float4(1, 1, 1, 1));
+                            colors.Add(new float4(1, 1, 1, lightFront));
+                            colors.Add(new float4(1, 1, 1, lightFront));
+                            colors.Add(new float4(1, 1, 1, lightFront));
+                            colors.Add(new float4(1, 1, 1, lightFront));
                             
                             blockUV = atlasMap[(((int) current) * 3) + 1];
                             uv.Add(new float2(blockUV.x / 16f + .001f, blockUV.y / 16f + .001f));
@@ -331,10 +363,10 @@ namespace UnityVoxelCommunityProject.Terrain
                             normals.Add(new float3(1, 0, 0));
                             normals.Add(new float3(1, 0, 0));
                             
-                            colors.Add(new float4(1, 1, 1, 1));
-                            colors.Add(new float4(1, 1, 1, 1));
-                            colors.Add(new float4(1, 1, 1, 1));
-                            colors.Add(new float4(1, 1, 1, 1));
+                            colors.Add(new float4(1, 1, 1, lightRight));
+                            colors.Add(new float4(1, 1, 1, lightRight));
+                            colors.Add(new float4(1, 1, 1, lightRight));
+                            colors.Add(new float4(1, 1, 1, lightRight));
                             
                             blockUV = atlasMap[(((int) current) * 3) + 1];
                             uv.Add(new float2(blockUV.x / 16f + .001f, blockUV.y / 16f + .001f));
@@ -358,10 +390,10 @@ namespace UnityVoxelCommunityProject.Terrain
                             normals.Add(new float3(-1, 0, 0));
                             normals.Add(new float3(-1, 0, 0));
                             
-                            colors.Add(new float4(1, 1, 1, 1));
-                            colors.Add(new float4(1, 1, 1, 1));
-                            colors.Add(new float4(1, 1, 1, 1));
-                            colors.Add(new float4(1, 1, 1, 1));
+                            colors.Add(new float4(1, 1, 1, lightLeft));
+                            colors.Add(new float4(1, 1, 1, lightLeft));
+                            colors.Add(new float4(1, 1, 1, lightLeft));
+                            colors.Add(new float4(1, 1, 1, lightLeft));
                             
                             blockUV = atlasMap[(((int) current) * 3) + 1];
                             uv.Add(new float2(blockUV.x / 16f + .001f, blockUV.y / 16f + .001f));

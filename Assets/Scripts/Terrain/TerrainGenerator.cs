@@ -143,7 +143,7 @@ namespace UnityVoxelCommunityProject.Legacy
 
         void LoadChunks(int chunkDist, bool instant = false)
         {
-            Vector3 offset = AntiFloatPointOrigin.Instance.offset;
+            Vector3 offset = Vector3.zero;
             //the current chunk the player is in
             int curChunkPosX = Mathf.FloorToInt((player.position.x + offset.x) / 16) * 16;
             int curChunkPosZ = Mathf.FloorToInt((player.position.z + offset.z) / 16) * 16;
@@ -199,7 +199,7 @@ namespace UnityVoxelCommunityProject.Legacy
 
         void UnloadChunk(int chunkDist)
         {
-            Vector3 offset = AntiFloatPointOrigin.Instance.offset;
+            Vector3 offset = Vector3.zero;
             int curChunkPosX = Mathf.FloorToInt((player.position.x + offset.x) / 16) * 16;
             int curChunkPosZ = Mathf.FloorToInt((player.position.z + offset.z) / 16) * 16;
 
@@ -236,11 +236,6 @@ namespace UnityVoxelCommunityProject.Legacy
         {
             this.x = x;
             this.z = z;
-        }
-
-        public override string ToString()
-        {
-            return "[x=" + x + ",z=" + z + "]";
         }
     }
 }

@@ -33,7 +33,7 @@ namespace UnityVoxelCommunityProject.Legacy
             
                 var tf = transform;
                 var temp = tf.position;
-                temp -= AntiFloatPointOrigin.Instance.offset;
+                temp -= Vector3.zero;
                 tf.position = temp;
             }
         }

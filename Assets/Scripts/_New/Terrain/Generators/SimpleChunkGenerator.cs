@@ -26,12 +26,19 @@ namespace UnityVoxelCommunityProject.Terrain.ProceduralGeneration
             z = i / width;
             x = i % width;
 
-            /*if (y < 40)
+            if (y < 57)
             {
-                currentChunk[index] = Block.Grass;
-            }*/
+                if (y == 56)
+                {
+                    currentChunk[index] = Block.Grass;
+                }
+                else
+                {
+                    currentChunk[index] = Block.Dirt;
+                }
+            }
                 
-            float snoiseResult = (math.unlerp(-1, 1, noise.snoise(new float2(x + (chunkPosition.x * width), z + (chunkPosition.y * width)) * 0.025f)) * 10);  
+            /*float snoiseResult = (math.unlerp(-1, 1, noise.snoise(new float2(x + (chunkPosition.x * width), z + (chunkPosition.y * width)) * 0.025f)) * 10);  
                 
             float heightMap  = height * 0.5f + snoiseResult;
             float stoneLevel = (height * 0.25f) + snoiseResult / 2;
@@ -54,7 +61,7 @@ namespace UnityVoxelCommunityProject.Terrain.ProceduralGeneration
             if (y <= snoiseResult/5)
             {
                 currentChunk[index] = Block.Core;
-            }
+            }*/
         }
     }
 }

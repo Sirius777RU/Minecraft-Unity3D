@@ -47,7 +47,7 @@ public class TerrainModifier : MonoBehaviour
                     pointInTargetBlock = hitInfo.point - transform.forward * .01f;
                 }
                 
-                Vector3 offset = AntiFloatPointOrigin.Instance.offset;
+                Vector3 offset = Vector3.zero;//AntiFloatPointOrigin.Instance.offset;
                 pointInTargetBlock += offset;
 
                 //Get the terrain chunk (can't just use collider)

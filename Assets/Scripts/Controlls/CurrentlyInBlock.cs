@@ -18,7 +18,7 @@ public class CurrentlyInBlock : MonoBehaviour
 
         private void FixedUpdate()
         {
-                var position = tf.position + (AntiFloatPointOrigin.Instance.offset);
+                var position = tf.position + (Vector3.zero);
                 
                 //get the terrain chunk (can't just use collider)
                 int chunkPosX = Mathf.FloorToInt((position.x + offset.x) / 16f) * 16;

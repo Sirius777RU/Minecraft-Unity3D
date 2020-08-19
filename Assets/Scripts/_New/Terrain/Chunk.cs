@@ -1,4 +1,6 @@
-﻿using UnityEngine;
+﻿using System;
+using System.Collections.Generic;
+using UnityEngine;
 using Unity.Collections;
 using Unity.Mathematics;
 using Unity.Jobs;
@@ -30,11 +32,16 @@ namespace UnityVoxelCommunityProject.Terrain
         [ReadOnly] private NativeArray<Block> currentChunk, 
                                               rightChunk, leftChunk, 
                                               backChunk,  frontChunk;
+
+        [ReadOnly] private NativeArray<byte> lightingData;
         
         [HideInInspector] public ChunkProcessing currentStage = ChunkProcessing.NotStarted;
         [HideInInspector] public int framesInCurrentProcessingStage = 0;
         [HideInInspector] public bool readyForNextStage = false;
         [HideInInspector] public Transform tf;
+        
+        public NativeArray<byte> lighting;
+        public List<Tuple<int3, LightSource>> lightSources;
         
         
         public void Initialize(int blocksCount)
@@ -61,11 +68,18 @@ namespace UnityVoxelCommunityProject.Terrain
             height = SettingsHolder.Instance.proceduralGeneration.chunkHeight;
             widthSqr = width * width;
             
+            lighting = new NativeArray<byte>(((width * 2) * (width * 2)) * height, Allocator.Persistent);
+            lightSources = new List<Tuple<int3, LightSource>>()
+            {
+                new Tuple<int3, LightSource>(new int3(0, 55, 14), LightSource.Sun)
+            };
+            
             meshFilter.mesh.bounds = new Bounds(new Vector3((width + 2)/2, (height + 2)/2, (width + 2)/2) - new Vector3(1f, 0, 1f), 
                                                 new Vector3((width + 2),   (height + 2),   (width + 2)));
             meshRenderer.enabled = false;
             meshCollider.enabled = false;
             gameObject.SetActive(false);
+            
         }
 
         public void UseThisChunk(int2 position, bool instant = true)
@@ -122,8 +136,9 @@ namespace UnityVoxelCommunityProject.Terrain
 
         private void InstantDisplay()
         {
-            var generationData = TerrainProceduralGeneration.Instance;
-            var generationMesh = TerrainGeometryGeneration.Instance;
+            var generationData  = TerrainProceduralGeneration.Instance;
+            var generationMesh  = TerrainGeometryGeneration.Instance;
+            var generationLight = TerrainLightingGeneration.Instance;
             
             //Generate chunk with neighbors.
             generationData.RequestChunkGeneration(chunkPosition, true);
@@ -131,10 +146,13 @@ namespace UnityVoxelCommunityProject.Terrain
             //Grab the result.
             GrabChunksData();
             
+            generationLight.RequestLightingGeneration(chunkPosition, lighting);
+            
             //And use all data it to display mesh;
             generationMesh.GenerateGeometry(mesh, currentChunk, 
                                             rightChunk, leftChunk,
                                             frontChunk, backChunk,
+                                            lightingData,
                                             vertices, normals, colors, triangles, uv).Schedule().Complete(); 
             
             generationMesh.ApplyGeometry(mesh, currentChunk, 
@@ -160,7 +178,7 @@ namespace UnityVoxelCommunityProject.Terrain
             {
                 var generationData = TerrainProceduralGeneration.Instance;
                 var generationMesh = TerrainGeometryGeneration.Instance;
-                
+                var generationLight = TerrainLightingGeneration.Instance;
                 
                 if (currentStage == ChunkProcessing.NotStarted)
                 {
@@ -175,9 +193,12 @@ namespace UnityVoxelCommunityProject.Terrain
                     currentStage = ChunkProcessing.MeshDataGeneration;
                     GrabChunksData();
                     
+                    generationLight.RequestLightingGeneration(chunkPosition, lighting);
+                    
                     meshGenerationJobHandle = generationMesh.GenerateGeometry(mesh, currentChunk,
                                                                               rightChunk, leftChunk,
                                                                               frontChunk, backChunk,
+                                                                              lightingData,
                                                                               vertices, normals, colors, triangles, uv)
                                                             .Schedule();
                 }
@@ -238,6 +259,8 @@ namespace UnityVoxelCommunityProject.Terrain
             leftChunk    = ChunkManager.Instance.dataWorld.chunks[chunkPosition + new int2(-1, 0)].blocks;
             frontChunk   = ChunkManager.Instance.dataWorld.chunks[chunkPosition + new int2(0, 1)].blocks;
             backChunk    = ChunkManager.Instance.dataWorld.chunks[chunkPosition + new int2(0, -1)].blocks;
+            
+            lightingData = lighting;
         }
 
         private void OnDestroy()
@@ -253,6 +276,8 @@ namespace UnityVoxelCommunityProject.Terrain
             colors.Dispose();
             triangles.Dispose();
             uv.Dispose();
+
+            lighting.Dispose();
         }
     }
 
