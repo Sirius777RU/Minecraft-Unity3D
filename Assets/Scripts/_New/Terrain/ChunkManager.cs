@@ -300,7 +300,25 @@ namespace UnityVoxelCommunityProject.Terrain
             {
                 usedChunksMap[chunkPosition].Local(true);
 
+                //Updating every neighbor since we could affect their lighting.
                 int2 setCheckPosition = int2.zero;
+                setCheckPosition = chunkPosition + new int2(-1, 0);
+                if (usedChunksMap.ContainsKey(setCheckPosition))
+                    usedChunksMap[setCheckPosition].Local(true);
+                
+                setCheckPosition = chunkPosition + new int2(1, 0);
+                if (usedChunksMap.ContainsKey(setCheckPosition))
+                    usedChunksMap[setCheckPosition].Local(true);
+
+                setCheckPosition = chunkPosition + new int2(0, -1);
+                if (usedChunksMap.ContainsKey(setCheckPosition))
+                    usedChunksMap[setCheckPosition].Local(true);
+                
+                setCheckPosition = chunkPosition + new int2(0, 1);
+                if (usedChunksMap.ContainsKey(setCheckPosition))
+                    usedChunksMap[setCheckPosition].Local(true);
+                
+                /*int2 setCheckPosition = int2.zero;
                 if (blockPosition.x == 0)
                 {
                     setCheckPosition = chunkPosition + new int2(-1, 0);
@@ -325,7 +343,7 @@ namespace UnityVoxelCommunityProject.Terrain
                     setCheckPosition = chunkPosition + new int2(0, 1);
                     if (usedChunksMap.ContainsKey(setCheckPosition))
                         usedChunksMap[setCheckPosition].Local(true);
-                }
+                }*/
             }
         }
         

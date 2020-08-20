@@ -96,13 +96,8 @@ namespace UnityVoxelCommunityProject.Terrain
             
             int width    = SettingsHolder.Instance.proceduralGeneration.chunkWidth;
             int height   = SettingsHolder.Instance.proceduralGeneration.chunkHeight;
-            
+
             var world = ChunkManager.Instance.dataWorld;
-            var chunkCurrent = world.chunks[position];
-            /*var chunkFront   = world.chunks[position + new int2(0, 1)];
-            var chunkBack    = world.chunks[position + new int2(0, -1)];
-            var chunkLeft    = world.chunks[position + new int2(-1, 0)];
-            var chunkRight   = world.chunks[position + new int2(1, 0)];*/
             
             var lightPoints = new NativeQueue<int3>(Allocator.TempJob);
             var lightPower = new NativeQueue<byte>(Allocator.TempJob);
@@ -110,7 +105,10 @@ namespace UnityVoxelCommunityProject.Terrain
             var arrowPositions = new NativeList<int3>(Allocator.TempJob);
             var dots = new NativeList<int3>(Allocator.TempJob);
             
-            lightPoints.Enqueue(new int3(7 + 8, 57, 7 + 8));
+            lightPoints.Enqueue(new int3(7 + 8, 57, (7 + 8) - 12));
+            lightPower.Enqueue(80);
+            
+            lightPoints.Enqueue(new int3(7 + 8, 57, (7 + 8) + 4));
             lightPower.Enqueue(80);
             
             var handle = new LightingJob()
@@ -131,11 +129,11 @@ namespace UnityVoxelCommunityProject.Terrain
                 
                 maximumStepCount = stepsCount,
 
-                blocksCurrent = chunkCurrent.blocks/*,
-                blocksFront   = chunkFront.blocks,
-                blocksBack    = chunkBack.blocks,
-                blocksLeft    = chunkLeft.blocks,
-                blocksRight   = chunkRight.blocks,*/
+                blocksCurrent = world.chunks[position].blocks,
+                blocksFront   = world.chunks[position + new int2(0, 1)].blocks,
+                blocksBack    = world.chunks[position + new int2(0, -1)].blocks,
+                blocksLeft    = world.chunks[position + new int2(-1, 0)].blocks,
+                blocksRight   = world.chunks[position + new int2(1, 0)].blocks,
             }.Schedule();
             
             lightPoints.Dispose(handle);
@@ -193,8 +191,8 @@ namespace UnityVoxelCommunityProject.Terrain
 
             public int3 customPoint;
 
-            [ReadOnly] public NativeArray<Block> blocksCurrent;//, 
-                                                 //blocksLeft, blocksRight, blocksFront, blocksBack;
+            [ReadOnly] public NativeArray<Block> blocksCurrent, 
+                                                 blocksLeft, blocksRight, blocksFront, blocksBack;
 
             public int width, height, widthSqr;
             public int maximumStepCount;
@@ -205,6 +203,13 @@ namespace UnityVoxelCommunityProject.Terrain
             private int minWidth;
             private int lWidth;
             
+            const byte lightDegradation = 10;
+            
+            private int3 localPosition;
+            private byte localIntensity;
+
+            private bool notCurrent;
+
             public void Execute()
             {
                 currentSteps = 0;
@@ -230,8 +235,8 @@ namespace UnityVoxelCommunityProject.Terrain
                     localPosition  = position;
                     localIntensity = intensity;
 
-                    var index = GetIndex(position);
-                    if(Opaque(GetBlock(index)))
+                    //var index = GetIndex(position);
+                    if(Opaque(position))
                         continue;
 
                     var lIndex = GetIndex(position, true);
@@ -241,7 +246,7 @@ namespace UnityVoxelCommunityProject.Terrain
                     direction = new int3(-1, 0, 0);
                     localPosition  = position + direction;
                     localIntensity = intensity;
-                    while (localPosition.x > minWidth && localIntensity > lightDegradation)
+                    while (localPosition.x > 0 && localIntensity > lightDegradation)
                     {
                         //if (currentSteps >= stepsCount)
                         //    return;
@@ -265,7 +270,7 @@ namespace UnityVoxelCommunityProject.Terrain
                     direction      = new int3(0, 0, -1);
                     localPosition  = position + direction;
                     localIntensity = intensity;
-                    while (localPosition.z > minWidth && localIntensity > lightDegradation)
+                    while (localPosition.z > 0 && localIntensity > lightDegradation)
                     {
                         //if (currentSteps >= stepsCount)
                         //    return;
@@ -320,30 +325,28 @@ namespace UnityVoxelCommunityProject.Terrain
                 
                 //Debug.Log(currentSteps);
                 //Debug.Log(calls);
-                //Debug.Log($"Steps {currentSteps} and DequeueCalls {calls}");
+                Debug.Log($"Steps {currentSteps} and DequeueCalls {calls}");
             }
 
-            const byte lightDegradation = 10;
-            
-            private int3 localPosition;
-            private byte localIntensity;
             
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             private bool MoveAndSpread()
             {
-                int index = GetIndex(localPosition);
+                //int index = GetIndex(localPosition);
+                //notCurrent = CheckIfCurrent(localPosition);
+                
                 var lIndex = GetIndex(localPosition, true);
                 var light = currentLighting[lIndex];
                         
                 localIntensity -= lightDegradation;
 
-                if (!Opaque(GetBlock(index)) && light < localIntensity)
+                if (!Opaque(localPosition) && light < localIntensity)
                 {
                     currentLighting[lIndex] = localIntensity;
 
                     if (localIntensity >= lightDegradation)
                     {
-                        if (direction.x >= 0 && localPosition.x > minWidth)
+                        if (direction.x >= 0 )
                             TryToSpread(new int3(-1, 0, 0));
                         
                         if (direction.x <= 0 && localPosition.x < lWidth - 1)
@@ -385,14 +388,14 @@ namespace UnityVoxelCommunityProject.Terrain
             {
                 spreadDirection += localPosition;
 
-                var index = GetIndex(spreadDirection);
+                //var index = GetIndex(spreadDirection);
                 var lIndex = GetIndex(spreadDirection, true);
                 var lightAtDirection = currentLighting[lIndex];
                 var spreadLight = localIntensity;
                 spreadLight -= lightDegradation;
                 
                 if (lightAtDirection != 5 &&  
-                    !Opaque(GetBlock(index)) && lightAtDirection < spreadLight)
+                    !Opaque(localPosition) && lightAtDirection < spreadLight)
                 {
                     lightPoints.Enqueue(spreadDirection);
                     lightPower.Enqueue(spreadLight);
@@ -406,58 +409,25 @@ namespace UnityVoxelCommunityProject.Terrain
             }
             
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            private Block GetBlock(int index)
+            private bool Opaque(int3 position)
             {
-                return blocksCurrent[index];
-                
-                /*if (orientation == ChunkOrientation.current)
+                Block block = Block.Core;
+                if(position.z < minWidth)
                 {
-                    return blocksCurrent[index];
+                    position.z += width;
+                    block = blocksBack[GetIndex(position)];
                 }
-                else if(orientation == ChunkOrientation.back)
+                else if (position.z > (width + minWidth) - 1)
                 {
-                    return blocksBack[index];
-                }*/
+                    position.z -= width;
+                    //Debug.Log(position);
+                    block = blocksFront[GetIndex(position)];
+                }
+                else
+                {
+                    block = blocksCurrent[GetIndex(position)];
+                }
 
-                return Block.Core;
-            }
-
-            private int Occlusion(int3 position, int intensity)
-            {
-                int index = 0;
-                int occlusion = 2;
-
-                index = GetIndex(position + new int3(-1, 0, 0));
-                if (Opaque(blocksCurrent[index]))
-                    intensity -= occlusion;
-
-                index = GetIndex(position + new int3(1, 0, 0));
-                if (Opaque(blocksCurrent[index]))
-                    intensity -= occlusion;
-
-                index = GetIndex(position + new int3(0, 0, 1));
-                if (Opaque(blocksCurrent[index]))
-                    intensity -= occlusion;
-                    
-                index = GetIndex(position + new int3(0, 0, -1));
-                if (Opaque(blocksCurrent[index]))
-                    intensity -= occlusion;
-                
-                index = GetIndex(position + new int3(0, 1, 0));
-                if (Opaque(blocksCurrent[index]))
-                    intensity -= occlusion;
-                
-                index = GetIndex(position + new int3(0, -1, 0));
-                if (Opaque(blocksCurrent[index]))
-                    intensity -= occlusion;
-                
-                return intensity;
-            }
-
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            private bool Opaque(Block block)
-            {
-                
                 if (block != Block.Air)
                 {
                     return true;
@@ -466,15 +436,30 @@ namespace UnityVoxelCommunityProject.Terrain
                 return false;
             }
 
+            private bool CheckIfCurrent(int3 position)
+            {
+                if (position.z < minWidth)
+                {
+                    return false;
+                }
+                
+                return true;
+            }
+            
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             private int GetIndex(int3 position, bool forLight = false)
             {
                 if (forLight)
                 {
+                    //Debug.Log(position);
+                    //position.z = position.z + lw
                     return (lWidth * height * position.z) + (lWidth * position.y) + position.x;
+                    //(32 * 64 * -1) + (32 * 57) + 8
+                    //
                 }
                 else
                 {
+                    //Debug.Log(position);
                     return (width * height * (position.z - minWidth)) + (width * position.y) + (position.x - minWidth);
                 }
             }

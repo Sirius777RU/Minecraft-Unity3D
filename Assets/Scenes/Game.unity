@@ -4714,7 +4714,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 353b1f7506fd49778c7ac0f6b405f858, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  settings: {fileID: 11400000, guid: d27ea3888ee770a44ab6ea7f87492ba6, type: 2}
+  settings: {fileID: 11400000, guid: 7ab5fea70594f864c8e5ac2872e0663e, type: 2}
   freeze: 0
   tf: {fileID: 0}
   controller: {fileID: 0}
@@ -7107,7 +7107,7 @@ Transform:
   m_Father: {fileID: 1479434723}
   m_RootOrder: 4
   m_LocalEulerAnglesHint: {x: 0, y: 20.91, z: 11.69}
---- !u!28 &1920306159
+--- !u!28 &1967209588
 Texture2D:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -7547,7 +7547,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Texture: {fileID: 1920306159}
+  m_Texture: {fileID: 1967209588}
   m_UVRect:
     serializedVersion: 2
     x: 0
