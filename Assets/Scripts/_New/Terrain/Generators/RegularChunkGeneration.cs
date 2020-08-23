@@ -20,10 +20,10 @@ namespace UnityVoxelCommunityProject.Terrain.ProceduralGeneration
         {
             i = index;
 
-            y = i / (height);
-            i = i % (height);
-            z = i / width;
-            x = i % width;
+            z =  i / (width * height);
+            i -= (width * height * z);
+            y =  (i / width);
+            x =  i % width;
             
             float noiseScale = 0.02f;
             float3 noiseMapping = new float3(x + (chunkPosition.x * width),
@@ -92,7 +92,7 @@ namespace UnityVoxelCommunityProject.Terrain.ProceduralGeneration
             for (int z = 0; z < width; z++)
             for (int y = height-1; y > seaLevel; y--)
             {
-                int index = x + z * width + y * areaSquare;
+                int index = (width * height * z) + (width * y) + x;
                 Block currentBlock = currentChunk[index];
                 if (currentBlock != Block.Air)
                 {

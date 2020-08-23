@@ -263,6 +263,63 @@ namespace UnityVoxelCommunityProject.Terrain
             
             return dataWorld.chunks[chunkPosition].blocks[i];
         }
+
+        public void AddLightToPosition(int3 blockPosition, byte intensity)
+        {
+            int2 chunkPosition; 
+            
+            //Compatible with negative chunk positions.
+            chunkPosition.x = Mathf.FloorToInt((0f + blockPosition.x) / width);
+            chunkPosition.y = Mathf.FloorToInt((0f + blockPosition.z) / width);
+            
+            blockPosition.x = (blockPosition.x % width + width) % width;
+            blockPosition.z = (blockPosition.z % width + width) % width;
+            
+            chunkPosition.x += initialOffset;
+            chunkPosition.y += initialOffset;
+            
+            dataWorld.chunks[chunkPosition].lightSources.Add(new Tuple<int3, byte>(blockPosition, intensity));
+
+            if (usedChunksMap.ContainsKey(chunkPosition))
+            {
+                usedChunksMap[chunkPosition].Local(true);
+
+                //Updating every neighbor since we could affect their lighting.
+                //TODO would be lovely to make it more precise about what should be updated.
+                int2 setCheckPosition = int2.zero;
+                setCheckPosition = chunkPosition + new int2(-1, 0);
+                if (usedChunksMap.ContainsKey(setCheckPosition))
+                    usedChunksMap[setCheckPosition].Local(true);
+
+                setCheckPosition = chunkPosition + new int2(1, 0);
+                if (usedChunksMap.ContainsKey(setCheckPosition))
+                    usedChunksMap[setCheckPosition].Local(true);
+
+                setCheckPosition = chunkPosition + new int2(0, -1);
+                if (usedChunksMap.ContainsKey(setCheckPosition))
+                    usedChunksMap[setCheckPosition].Local(true);
+
+                setCheckPosition = chunkPosition + new int2(0, 1);
+                if (usedChunksMap.ContainsKey(setCheckPosition))
+                    usedChunksMap[setCheckPosition].Local(true);
+
+                setCheckPosition = chunkPosition + new int2(-1, -1);
+                if (usedChunksMap.ContainsKey(setCheckPosition))
+                    usedChunksMap[setCheckPosition].Local(true);
+
+                setCheckPosition = chunkPosition + new int2(-1, 1);
+                if (usedChunksMap.ContainsKey(setCheckPosition))
+                    usedChunksMap[setCheckPosition].Local(true);
+
+                setCheckPosition = chunkPosition + new int2(1, 1);
+                if (usedChunksMap.ContainsKey(setCheckPosition))
+                    usedChunksMap[setCheckPosition].Local(true);
+
+                setCheckPosition = chunkPosition + new int2(1, -1);
+                if (usedChunksMap.ContainsKey(setCheckPosition))
+                    usedChunksMap[setCheckPosition].Local(true);
+            }
+        }
         
         //Get blocks in certain volume.
         public void GetBlocksVolume(int3 from, int3 to, NativeArray<Block> blocks)
@@ -295,7 +352,7 @@ namespace UnityVoxelCommunityProject.Terrain
 
             dataWorld.chunks[chunkPosition].blocks[i] = block;
             
-            //Update changed chunk and neighbors if needed.
+            //Update changed chunk and neighbors.
             if (usedChunksMap.ContainsKey(chunkPosition))
             {
                 usedChunksMap[chunkPosition].Local(true);
@@ -318,6 +375,23 @@ namespace UnityVoxelCommunityProject.Terrain
                 if (usedChunksMap.ContainsKey(setCheckPosition))
                     usedChunksMap[setCheckPosition].Local(true);
                 
+                setCheckPosition = chunkPosition + new int2(-1, -1);
+                if (usedChunksMap.ContainsKey(setCheckPosition))
+                    usedChunksMap[setCheckPosition].Local(true);
+                
+                setCheckPosition = chunkPosition + new int2(-1, 1);
+                if (usedChunksMap.ContainsKey(setCheckPosition))
+                    usedChunksMap[setCheckPosition].Local(true);
+                
+                setCheckPosition = chunkPosition + new int2(1, 1);
+                if (usedChunksMap.ContainsKey(setCheckPosition))
+                    usedChunksMap[setCheckPosition].Local(true);
+                
+                setCheckPosition = chunkPosition + new int2(1, -1);
+                if (usedChunksMap.ContainsKey(setCheckPosition))
+                    usedChunksMap[setCheckPosition].Local(true);
+                
+                //Updating 4 neighbors if current set is on edge of changed chunk.
                 /*int2 setCheckPosition = int2.zero;
                 if (blockPosition.x == 0)
                 {

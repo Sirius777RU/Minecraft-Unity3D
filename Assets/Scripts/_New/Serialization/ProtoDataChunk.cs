@@ -11,12 +11,14 @@ namespace UnityVoxelCommunityProject
     public class ProtoDataChunk
     {
         [ProtoMember(1)] public Block[] blocks;
+        //TODO [ProtoMember(2)] public List lightSources
 
         public static implicit operator DataChunk(ProtoDataChunk p)
         {
             return new DataChunk()
             {
                 blocks = new NativeArray<Block>(p.blocks, Allocator.Persistent),
+                lightSources = new List<Tuple<int3, byte>>(),
                 isReady = true
             };
         }

@@ -10,6 +10,7 @@ namespace UnityVoxelCommunityProject
     public class DataChunk
     {
         public NativeArray<Block> blocks;
+        public List<Tuple<int3, byte>> lightSources;
 
         public bool isReady;
     }

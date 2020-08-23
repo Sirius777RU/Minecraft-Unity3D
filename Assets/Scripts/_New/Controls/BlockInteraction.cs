@@ -20,6 +20,8 @@ namespace UnityVoxelCommunityProject.General.Controls
         [Space(10), Header("Fast Mode")]
         public float waitAfterButtonDown = 0.3f;
         public float actionCooldown = 0.1f;
+
+        [Range(1, 8)] public byte voxelLightIntensity = 7;
         
         private Transform player;
         private Transform mainCamera;
@@ -40,9 +42,10 @@ namespace UnityVoxelCommunityProject.General.Controls
         private void Update()
         {
             currentCooldownTime += Time.deltaTime;
-            
-            bool leftClick  = Input.GetMouseButtonDown(0);
-            bool rightClick = Input.GetMouseButtonDown(1);
+
+            bool leftClick   = Input.GetMouseButtonDown(0);
+            bool rightClick  = Input.GetMouseButtonDown(1);
+            bool middleClick = Input.GetMouseButtonDown(2);
 
             bool leftClickHold  = Input.GetMouseButton(0);
             bool rightClickHold = Input.GetMouseButton(1);
@@ -77,7 +80,7 @@ namespace UnityVoxelCommunityProject.General.Controls
                 Block   currentBlock;
 
                 if(currentCooldownTime >= actionCooldown &&
-                   (leftClick || rightClick))
+                   (leftClick || rightClick || middleClick))
                 {
                     if (leftClick)
                     {
@@ -106,6 +109,15 @@ namespace UnityVoxelCommunityProject.General.Controls
                             currentCooldownTime = 0;
                             ChunkManager.Instance.SetBlockAtPosition(blockPosition, currentSetBlock);
                         }
+                    }
+                    else if (middleClick)
+                    {
+                        blockPoint = hitInfo.point - mainCamera.forward * deepenRaycastPoint;
+                        blockPosition = new int3(Mathf.FloorToInt(blockPoint.x + 1),
+                                                 Mathf.FloorToInt(blockPoint.y + 1),
+                                                 Mathf.FloorToInt(blockPoint.z + 1));
+                        
+                        ChunkManager.Instance.AddLightToPosition(blockPosition, (byte) (voxelLightIntensity * 10));
                     }
                 }
                 

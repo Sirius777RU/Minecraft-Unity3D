@@ -76,10 +76,10 @@
 			fixed diff = max (0, dot (s.Normal, lightDir));
 			float nh = max (0, dot (s.Normal, h));
 			
-			//float lighting = clamp(s.Lighting / 20, _MinimumLightIntensity, 2);			
-			//fixed3 diffAlbedo = (((s.Albedo * _LightColor0.rgb * diff) * (atten * 2)));
+			float lighting = clamp(s.Lighting / 40, _MinimumLightIntensity, 2);			
+			fixed3 diffAlbedo = (((s.Albedo * _LightColor0.rgb * diff) * (atten * 2)));
 			
-			//diffAlbedo = (diffAlbedo + (s.Albedo * lighting)) / 2; 
+			diffAlbedo = (diffAlbedo + (s.Albedo * lighting)) / 2; 
 			
 			
             //fixed3 blockAlbedo = s.Albedo * (clamp(s.Lighting / 20, _MinimumLightIntensity, 255));
@@ -87,7 +87,7 @@
             //diffAlbedo.r = min(diffAlbedo.r, blockAlbedo.r);
             //diffAlbedo.g = min(diffAlbedo.g, blockAlbedo.g);
             //diffAlbedo.b = min(diffAlbedo.b, blockAlbedo.b);
-            fixed3 diffAlbedo = s.Albedo * (clamp(s.Lighting / 40, _MinimumLightIntensity, 255));
+            //fixed3 diffAlbedo = s.Albedo * (clamp(s.Lighting / 40, _MinimumLightIntensity, 255));
             
             float thick = s.Thick; 
 
