@@ -183,14 +183,12 @@ namespace UnityVoxelCommunityProject.Terrain
                 }
 
                 counter = lightPoints.Count;
-                int calls = 0;
 
                 while (counter > 0) 
                 {
                     var position  = lightPoints.Dequeue();
                     var intensity = lightPower.Dequeue();
                     counter--;
-                    calls++;
 
                     localPosition  = position;
                     localIntensity = intensity;
@@ -199,6 +197,10 @@ namespace UnityVoxelCommunityProject.Terrain
                         continue;
 
                     var lIndex = GetIndex(position, true);
+                    var light = currentLighting[lIndex];
+                    if(light >= intensity)
+                        continue;
+                        
                     currentLighting[lIndex] = intensity;
 
                     #region MoveAround
@@ -314,17 +316,26 @@ namespace UnityVoxelCommunityProject.Terrain
                 //var index = GetIndex(spreadDirection);
                 var lIndex = GetIndex(spreadDirection, true);
                 var lightAtDirection = currentLighting[lIndex];
+
                 var spreadLight = localIntensity;
                 spreadLight -= lightDegradation;
                 
-                if (lightAtDirection != 5 &&  
-                    !Opaque(localPosition) && lightAtDirection < spreadLight)
+                var spreadMark = localIntensity / 10;
+                if (lightAtDirection < 10)
+                {
+                    if (spreadMark <= lightAtDirection)
+                    {
+                        return;
+                    }
+                }
+
+                if (!Opaque(localPosition) && lightAtDirection < spreadLight)
                 {
                     lightPoints.Enqueue(spreadDirection);
                     lightPower.Enqueue(spreadLight);
                     counter++;
 
-                    currentLighting[lIndex] = 5;
+                    currentLighting[lIndex] = (byte) spreadMark;
                     
                     //arrows.Add(spreadDirection);
                     //arrowPositions.Add(localPosition);

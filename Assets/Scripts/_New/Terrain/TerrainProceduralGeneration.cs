@@ -88,6 +88,17 @@ namespace UnityVoxelCommunityProject.Terrain
             float time = Time.realtimeSinceStartup;
 
             #region Generators
+            if (currentGenerator == Generator.Flat)
+            {
+                FlatChunkGenerator flatChunkGenerator = new FlatChunkGenerator()
+                {
+                    width    = width,
+                    height   = height,
+
+                    currentChunk = dataChunk.blocks
+                };
+                return new Tuple<JobHandle, DataChunk>(flatChunkGenerator.Schedule(totalBlocksCount - 1, batchParallelFor), dataChunk);
+            }
             if (currentGenerator == Generator.Simple)
             {
                 SimpleChunkGenerator simpleChunkGenerator = new SimpleChunkGenerator()

@@ -25,19 +25,7 @@ namespace UnityVoxelCommunityProject.Terrain.ProceduralGeneration
             i -= (width * height * z);
             y = (i / width);
             x = i % width;
-
-            /*if (y < 73)
-            {
-                if (y == 72)
-                {
-                    currentChunk[index] = Block.Grass;
-                }
-                else
-                {
-                    currentChunk[index] = Block.Dirt;
-                }
-            }*/
-                
+            
             float snoiseResult = (math.unlerp(-1, 1, noise.snoise(new float2(x + (chunkPosition.x * width), z + (chunkPosition.y * width)) * 0.025f)) * 10);  
                 
             float heightMap  = height * 0.5f + snoiseResult;
