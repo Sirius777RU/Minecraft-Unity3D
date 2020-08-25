@@ -282,8 +282,8 @@ namespace UnityVoxelCommunityProject.Terrain
 
             if (usedChunksMap.ContainsKey(chunkPosition))
             {
-                usedChunksMap[chunkPosition].Local(true);
-                UpdateNeighbors(chunkPosition, blockPosition.xz);
+                usedChunksMap[chunkPosition].Local(true, false);
+                UpdateNeighbors(chunkPosition, blockPosition.xz, false);
             }
         }
         
@@ -322,7 +322,7 @@ namespace UnityVoxelCommunityProject.Terrain
             if (usedChunksMap.ContainsKey(chunkPosition))
             {
                 usedChunksMap[chunkPosition].Local(true);
-                UpdateNeighbors(chunkPosition, blockPosition.xz);
+                UpdateNeighbors(chunkPosition, blockPosition.xz, true);
                 
                 
                 //Updating 4 neighbors if current set is on edge of changed chunk.
@@ -355,7 +355,7 @@ namespace UnityVoxelCommunityProject.Terrain
             }
         }
 
-        public void UpdateNeighbors(int2 chunkPosition, int2 blockPosition)
+        public void UpdateNeighbors(int2 chunkPosition, int2 blockPosition, bool updatePhysics)
         {
             //Updating every neighbor since we could affect their lighting.
             //TODO would be lovely to make it more precise about what should be updated.
@@ -368,7 +368,7 @@ namespace UnityVoxelCommunityProject.Terrain
             {
                 setCheckPosition = chunkPosition + new int2(-1, 0);
                 if (usedChunksMap.ContainsKey(setCheckPosition))
-                    usedChunksMap[setCheckPosition].Local(true);
+                    usedChunksMap[setCheckPosition].Local(true, updatePhysics);
             }
 
             //E
@@ -376,7 +376,7 @@ namespace UnityVoxelCommunityProject.Terrain
             {
                 setCheckPosition = chunkPosition + new int2(1, 0);
                 if (usedChunksMap.ContainsKey(setCheckPosition))
-                    usedChunksMap[setCheckPosition].Local(true);
+                    usedChunksMap[setCheckPosition].Local(true, updatePhysics);
             }
             
 
@@ -385,7 +385,7 @@ namespace UnityVoxelCommunityProject.Terrain
             {
                 setCheckPosition = chunkPosition + new int2(0, -1);
                 if (usedChunksMap.ContainsKey(setCheckPosition))
-                    usedChunksMap[setCheckPosition].Local(true);
+                    usedChunksMap[setCheckPosition].Local(true, updatePhysics);
             }
 
             //N
@@ -393,7 +393,7 @@ namespace UnityVoxelCommunityProject.Terrain
             {
                 setCheckPosition = chunkPosition + new int2(0, 1);
                 if (usedChunksMap.ContainsKey(setCheckPosition))
-                    usedChunksMap[setCheckPosition].Local(true);
+                    usedChunksMap[setCheckPosition].Local(true, updatePhysics);
             }
 
             //SW
@@ -401,7 +401,7 @@ namespace UnityVoxelCommunityProject.Terrain
             {
                 setCheckPosition = chunkPosition + new int2(-1, -1);
                 if (usedChunksMap.ContainsKey(setCheckPosition))
-                    usedChunksMap[setCheckPosition].Local(true);
+                    usedChunksMap[setCheckPosition].Local(true, false);
             }
             
             //NW
@@ -409,7 +409,7 @@ namespace UnityVoxelCommunityProject.Terrain
             {
                 setCheckPosition = chunkPosition + new int2(-1, 1);
                 if (usedChunksMap.ContainsKey(setCheckPosition))
-                    usedChunksMap[setCheckPosition].Local(true); 
+                    usedChunksMap[setCheckPosition].Local(true, false); 
             }
 
             //NE
@@ -417,7 +417,7 @@ namespace UnityVoxelCommunityProject.Terrain
             {
                 setCheckPosition = chunkPosition + new int2(1, 1);
                 if (usedChunksMap.ContainsKey(setCheckPosition))
-                    usedChunksMap[setCheckPosition].Local(true);
+                    usedChunksMap[setCheckPosition].Local(true, false);
             }
             
             //SE
@@ -425,7 +425,7 @@ namespace UnityVoxelCommunityProject.Terrain
             {
                 setCheckPosition = chunkPosition + new int2(1, -1);
                 if (usedChunksMap.ContainsKey(setCheckPosition))
-                    usedChunksMap[setCheckPosition].Local(true);
+                    usedChunksMap[setCheckPosition].Local(true, false);
             }
         }
         

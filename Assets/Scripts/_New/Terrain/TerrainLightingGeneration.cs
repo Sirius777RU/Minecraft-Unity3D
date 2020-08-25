@@ -133,6 +133,30 @@ namespace UnityVoxelCommunityProject.Terrain
                 var length = currentLighting.Length;
                 UnsafeUtility.MemClear(currentLighting.GetUnsafePtr(), length);
 
+                byte sunPower = 61;
+                int slWidth = width + minWidth;
+                for (int z = minWidth-1; z < slWidth+1; z++)
+                {
+                    for (int x = minWidth-1; x < slWidth+1; x++)
+                    {
+                        for (int y = height - 1; y > 0; y--)
+                        {
+                            int3 blockPosition = new int3(x, y, z);
+                            
+                            if (Opaque(blockPosition))
+                            {
+                                //currentLighting[GetIndex(sunLightPosition + new int3(8, 1, 8), true)] = 81;
+                                lightPoints.Enqueue(blockPosition + new int3(0, 1, 0));
+                                lightPower.Enqueue(sunPower);
+                                y = 0;
+                                continue;
+                            }
+                            
+                            currentLighting[GetIndex(blockPosition + new int3(0, 1, 0), true)] = sunPower;
+                        }
+                    }
+                }
+                
                 counter = lightPoints.Count;
 
                 while (counter > 0) 

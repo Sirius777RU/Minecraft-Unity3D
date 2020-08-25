@@ -119,13 +119,13 @@ namespace UnityVoxelCommunityProject.Terrain
             currentStage = ChunkProcessing.NotStarted;
         }
 
-        public void Local(bool instant)
+        public void Local(bool instant, bool withPhysics = true)
         {
             gameObject.name = $"Chunk [x{chunkPosition.x} z{chunkPosition.y}]";
 
             if (instant)
             {
-                InstantDisplay();
+                InstantDisplay(withPhysics);
             }
             else
             {
@@ -134,7 +134,7 @@ namespace UnityVoxelCommunityProject.Terrain
             }
         }
 
-        private void InstantDisplay()
+        private void InstantDisplay(bool withPhysics)
         {
             var generationData  = TerrainProceduralGeneration.Instance;
             var generationMesh  = TerrainGeometryGeneration.Instance;
@@ -161,7 +161,7 @@ namespace UnityVoxelCommunityProject.Terrain
                                          vertices, normals, colors, triangles, uv);
 
             //Then cause physics to update. That's not cheap, but out of other options here.
-            if (ChunkManager.Instance.updateColliders)
+            if (ChunkManager.Instance.updateColliders && withPhysics)
             {
                 if (meshCollider.enabled)
                     meshCollider.sharedMesh = mesh;
