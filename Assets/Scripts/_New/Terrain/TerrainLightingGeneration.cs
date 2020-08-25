@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using Unity.Burst;
 using Unity.Collections;
+using Unity.Collections.LowLevel.Unsafe;
 using Unity.Jobs;
 using Unity.Mathematics;
 using UnityEngine;
@@ -15,58 +16,11 @@ namespace UnityVoxelCommunityProject.Terrain
     {
         public float minimumLightValue = 0.1f;
 
-        private int3 customLightPoint = new int3(7+8, 57, 7+8);
-        
         private void Start()
         {
             Shader.SetGlobalFloat("_MinimumLightIntensity", minimumLightValue);
         }
 
-        /*
-        private void Update()
-        {
-            bool moved = false;
-            if (Input.GetKeyDown(KeyCode.W))
-            {
-                customLightPoint.z++;
-                moved = true;
-            }
-            
-            if (Input.GetKeyDown(KeyCode.S))
-            {
-                customLightPoint.z--;
-                moved = true;
-            }
-            
-            if (Input.GetKeyDown(KeyCode.A))
-            {
-                customLightPoint.x--;
-                moved = true;
-            }
-            
-            if (Input.GetKeyDown(KeyCode.D))
-            {
-                customLightPoint.x++;
-                moved = true;
-            }
-            
-            if (Input.GetKeyDown(KeyCode.Q))
-            {
-                customLightPoint.y++;
-                moved = true;
-            }
-            
-            if (Input.GetKeyDown(KeyCode.E))
-            {
-                customLightPoint.y--;
-                moved = true;
-            }
-            
-            if(moved)
-                ChunkManager.Instance.UpdateChunks();
-        }
-        */
-        
         public void RequestLightingGeneration(int2 position, NativeArray<byte> lighting)
         {
             int width    = SettingsHolder.Instance.proceduralGeneration.chunkWidth;
@@ -171,16 +125,13 @@ namespace UnityVoxelCommunityProject.Terrain
             private int3 localPosition;
             private byte localIntensity;
 
-            public void Execute()
+            public unsafe void Execute()
             {
                 lWidth = width * 2;
                 minWidth = (width / 2);
                 
                 var length = currentLighting.Length;
-                for (int i = 0; i < length; i++)
-                {
-                    currentLighting[i] = 0;
-                }
+                UnsafeUtility.MemClear(currentLighting.GetUnsafePtr(), length);
 
                 counter = lightPoints.Count;
 
@@ -313,7 +264,6 @@ namespace UnityVoxelCommunityProject.Terrain
             {
                 spreadDirection += localPosition;
 
-                //var index = GetIndex(spreadDirection);
                 var lIndex = GetIndex(spreadDirection, true);
                 var lightAtDirection = currentLighting[lIndex];
 
@@ -336,9 +286,6 @@ namespace UnityVoxelCommunityProject.Terrain
                     counter++;
 
                     currentLighting[lIndex] = (byte) spreadMark;
-                    
-                    //arrows.Add(spreadDirection);
-                    //arrowPositions.Add(localPosition);
                 }
             }
             
@@ -412,21 +359,6 @@ namespace UnityVoxelCommunityProject.Terrain
                     return (width * height * (position.z - minWidth)) + (width * position.y) + (position.x - minWidth);
                 }
             }
-            
-            private enum ChunkOrientation : byte
-            {
-                current,
-                front,
-                back,
-                left,
-                right,
-                
-                frontLeft,
-                frontRight,
-                backLeft,
-                backRight,
-            }
-            
         }
     }
 }

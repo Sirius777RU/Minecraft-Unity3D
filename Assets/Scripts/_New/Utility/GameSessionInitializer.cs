@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using Unity.Mathematics;
-using UnityEngine;
-using UnityEngine.UI;
+﻿using UnityEngine;
 using UnityVoxelCommunityProject.General.Controls;
 using UnityVoxelCommunityProject.Serialization;
 using UnityVoxelCommunityProject.Terrain;
